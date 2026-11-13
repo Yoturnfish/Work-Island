@@ -9,8 +9,6 @@
 
 ## 宣传片
 
-简体中文 · [Watch in English](README.md#trailer)
-
 https://github.com/user-attachments/assets/5d933f5e-2be5-464f-8028-48fec83e55b2
 
 ## 软件介绍

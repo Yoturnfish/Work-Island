@@ -9,8 +9,6 @@ Track work time using app and optional website rules, and see your daily progres
 
 ## Trailer
 
-English · [观看中文版](README.zh-CN.md#宣传片)
-
 https://github.com/user-attachments/assets/28697375-347d-45ac-888c-212086264d60
 
 ## About Work Island
