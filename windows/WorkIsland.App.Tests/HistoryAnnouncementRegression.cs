@@ -54,7 +54,7 @@ internal static partial class Program
                     var keys=0;KeyEventHandler onKey=(_,args)=>{if(args.Key==Key.End)keys++;};window.PreviewKeyUp+=onKey;
                     try
                     {
-                        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,window.Title,day,target,scope="Independent real WPF history editor accepted the same large value as the Mac test; store contains it. Statistics focused during preparation, await only official actual End key. Test-only dispatcher observer records OverflowException and keeps own fixture alive; it is not a product exception handler."},AtomicStore.JsonOptions));
+                        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,window.Title,day,target,scope="Independent real WPF history editor accepted the same large value as the Mac test; store contains it. Statistics focused during preparation, await only official actual End key. Test-only dispatcher observer records OverflowException and keeps own fixture alive; it is not a product exception handler."},AtomicStore.JsonOptions));
                         var marker=Path.Combine(output,"native-complete.txt");var watch=Stopwatch.StartNew();
                         while(!File.Exists(marker)&&watch.Elapsed.TotalSeconds<180)await Task.Delay(100);
                         check("official End key reached prepared statistics window",keys>0&&File.Exists(marker),new{keys});
@@ -72,7 +72,7 @@ internal static partial class Program
             check("accepted large history remains selectable without overflow",failure is null,failure);
             check("selected large history date exposes its exact visible total",Field<StackPanel>("HistoryRows").Children.OfType<TextBlock>().Single().Text==day+"  1000000000H 59M",Field<StackPanel>("HistoryRows").Children.OfType<TextBlock>().Single().Text);
             check("large accessible duration has complete positive hours and minutes",AutomationProperties.GetName(strip)==day+" · 1000000000:59:00",AutomationProperties.GetName(strip));
-            foreach(var seconds in new[]{0d,1.25,86401.125,Math.BitDecrement(TimeSpan.MaxValue.TotalSeconds),TimeSpan.MaxValue.TotalSeconds,target,9_000_000_000_000_000_000d})
+            foreach(var seconds in new[]{0d,1.25,86401.125,TestRuntime.BitDecrement(TimeSpan.MaxValue.TotalSeconds),TimeSpan.MaxValue.TotalSeconds,target,9_000_000_000_000_000_000d})
             {
                 var sample=new HistoryStatisticsStrip(new Dictionary<DateOnly,double>{{today,seconds}},today,14400,System.Windows.Media.Colors.Green,window.FontFamily);
                 double? announced=null;sample.HoverChanged+=(date,value)=>{if(date==today)announced=value;};sample.Measure(new Size(210,56));sample.Arrange(new Rect(0,0,210,56));

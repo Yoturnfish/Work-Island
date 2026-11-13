@@ -19,9 +19,9 @@ internal static partial class Program
 {
     private static Process StartOwnTestProbe(string mode,string folder)
     {
-        var info=new ProcessStartInfo(Environment.ProcessPath!){UseShellExecute=false,CreateNoWindow=true};
-        if(Path.GetFileNameWithoutExtension(Environment.ProcessPath)=="dotnet")info.ArgumentList.Add(Assembly.GetExecutingAssembly().Location);
-        info.ArgumentList.Add(mode);info.ArgumentList.Add(folder);return Process.Start(info)!;
+        var info=new ProcessStartInfo(RuntimeCompat.ProcessPath!){UseShellExecute=false,CreateNoWindow=true};
+        if(Path.GetFileNameWithoutExtension(RuntimeCompat.ProcessPath)=="dotnet")TestRuntime.AddArgument(info,Assembly.GetExecutingAssembly().Location);
+        TestRuntime.AddArgument(info,mode);TestRuntime.AddArgument(info,folder);return Process.Start(info)!;
     }
     private static async Task RunOwnedModalChecks(string output,Action<string,bool,object?> check)
     {
@@ -103,7 +103,7 @@ internal static partial class Program
                     if(!nativeVisible&&ownerVisible&&!(bool)typeof(IslandWindow).GetField("fullscreenSuppressed",Flags)!.GetValue(island)!
                         &&!(bool)typeof(IslandWindow).GetField("ownedPopupsSuppressed",Flags)!.GetValue(island)!)return;
                     if(!nativeVisible||!ownerVisible)FullscreenReadOnly.Write(Path.Combine(folder,"initial-hidden-fullscreen-state.json"));
-                    Check("actual Windows file picker is visible and owned by the isolated island",ModalIsWindowVisible(dialog)&&island.IsVisible,new{dialog=(long)dialog,owner=(long)owner,processId=Environment.ProcessId});
+                    Check("actual Windows file picker is visible and owned by the isolated island",ModalIsWindowVisible(dialog)&&island.IsVisible,new{dialog=(long)dialog,owner=(long)owner,processId=RuntimeCompat.ProcessId});
                     var dialogTitle=new StringBuilder(512);LocalizedDialogTitle(dialog,dialogTitle,dialogTitle.Capacity);
                     Check("actual native picker title follows the selected interface language",dialogTitle.ToString()==(language=="en"?"Choose an app to track":"选择需要识别的应用"),new{language,title=dialogTitle.ToString()});
                     File.WriteAllText(command,"fullscreen");phase=1;
@@ -178,7 +178,7 @@ internal static partial class Program
         ModalEnumThreadWindows(ModalGetCurrentThreadId(),(window,_)=>
         {
             ModalGetWindowThreadProcessId(window,out var pid);var name=new StringBuilder(128);ModalGetClassName(window,name,name.Capacity);
-            if(pid==Environment.ProcessId&&name.ToString()=="#32770"&&ModalGetWindow(window,4)==owner){result=window;return false;}return true;
+            if(pid==RuntimeCompat.ProcessId&&name.ToString()=="#32770"&&ModalGetWindow(window,4)==owner){result=window;return false;}return true;
         },0);return result;
     }
     [DllImport("user32.dll",EntryPoint="ShowWindow")]private static extern bool ModalTraceHideWindow(nint window,int command);

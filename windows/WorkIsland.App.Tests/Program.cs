@@ -366,7 +366,7 @@ internal static partial class Program
 
                 var icon = (Grid)typeof(IslandWindow).GetField("StatusIcon", Flags)!.GetValue(window)!;
                 var scale = (ScaleTransform)icon.RenderTransform;
-                void Render() => typeof(IslandWindow).GetMethod("Render", Flags, Type.EmptyTypes)!.Invoke(window, null);
+                void Render() => typeof(IslandWindow).GetMethod("Render", Flags, null, Type.EmptyTypes, null)!.Invoke(window, null);
                 async Task<bool> Until(Func<bool> condition,int timeoutMs=4000)
                 {
                     var watch=Stopwatch.StartNew();

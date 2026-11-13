@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Drawing;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -33,7 +34,7 @@ internal sealed class NativeStatusItem : IDisposable
     {
         this.notifyIcon=notifyIcon??Shell_NotifyIcon;
         source = HwndSource.FromHwnd(window)!;
-        guid = new Guid(SHA256.HashData(Encoding.UTF8.GetBytes(identity.ToUpperInvariant())).AsSpan(0, 16));
+        guid = new Guid(RuntimeCompat.HashData(Encoding.UTF8.GetBytes(identity.ToUpperInvariant())).Take(16).ToArray());
         source.AddHook(Message);
     }
 
@@ -67,7 +68,7 @@ internal sealed class NativeStatusItem : IDisposable
         // reject an add while rebuilding its notification area; animation
         // frames and unchanged tooltip updates must not flood Shell retries.
         if(disposed||!wanted||installed)return;
-        if(lastInstallAttempt is {} last&&Stopwatch.GetElapsedTime(last).TotalSeconds<1)return;
+        if(lastInstallAttempt is {} last&&RuntimeCompat.GetElapsedTime(last).TotalSeconds<1)return;
         SetVisible(true);
     }
 
@@ -75,14 +76,14 @@ internal sealed class NativeStatusItem : IDisposable
     {
         if(disposed)return;
         FrameUpdates++;
-        var started=Stopwatch.GetTimestamp();var next = bitmap.GetHicon();IconSeconds+=Stopwatch.GetElapsedTime(started).TotalSeconds;var previous = icon; icon = next;
+        var started=Stopwatch.GetTimestamp();var next = bitmap.GetHicon();IconSeconds+=RuntimeCompat.GetElapsedTime(started).TotalSeconds;var previous = icon; icon = next;
         tooltip = text[..Math.Min(127, text.Length)];
         if (installed)
         {
             var data = Data();
             started=Stopwatch.GetTimestamp();
             if (!notifyIcon(1, ref data)) { installed = false; RetryMissingEntry(); }
-            ShellSeconds+=Stopwatch.GetElapsedTime(started).TotalSeconds;
+            ShellSeconds+=RuntimeCompat.GetElapsedTime(started).TotalSeconds;
         }
         else RetryMissingEntry();
         if (previous != 0) DestroyIcon(previous);

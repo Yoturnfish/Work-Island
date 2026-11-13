@@ -26,10 +26,10 @@ internal static partial class Program
         var probe=new Window{Title="Work Island · 输入来源验收",Width=540,Height=240,Left=650,Top=280,ShowInTaskbar=true,ShowActivated=false,Content=content};
         var clicks=0;var keys=0;var rawMessages=0;button.Click+=(_,_)=>clicks++;probe.PreviewKeyDown+=(_,_)=>keys++;
         probe.Show();var handle=new WindowInteropHelper(probe).Handle;
-        HwndSourceHook hook=(nint hwnd,int message,nint wParam,nint lParam,ref bool handled)=>{if(message==0xff)rawMessages++;return 0;};
+        HwndSourceHook hook=(nint hwnd,int message,nint wParam,nint lParam,ref bool handled)=>{if(message==0xff)rawMessages++;return IntPtr.Zero;};
         // Observe the actual production raw-input source, not synthetic UI events.
         var source=(HwndSource)type.GetField("inputSource",flags)!.GetValue(null)!;source.AddHook(hook);
-        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,hwnd=handle.ToInt64(),title=probe.Title,timeoutSeconds=180},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,hwnd=handle.ToInt64(),title=probe.Title,timeoutSeconds=180},AtomicStore.JsonOptions));
         var stages=new List<object>();var watch=Stopwatch.StartNew();var stage=0;
         try
         {

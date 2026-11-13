@@ -35,7 +35,7 @@ internal static partial class Program
         foreach(var size in new[]{new Size(120,40),new Size(80,22),new Size(140,50),new Size(100,30)})
         {
             surface.Upload(Bitmap((int)size.Width,(int)size.Height,170),size);
-            var pointer=(nint)field.GetValue(actual)!;var get=Marshal.GetDelegateForFunctionPointer<ActualSurfaceSize>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),8*nint.Size));
+            var pointer=(nint)field.GetValue(actual)!;var get=Marshal.GetDelegateForFunctionPointer<ActualSurfaceSize>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),8*IntPtr.Size));
             Marshal.ThrowExceptionForHR(get(pointer,out var nativeSize));allSizes&=nativeSize.Width==size.Width&&nativeSize.Height==size.Height;
         }
         check("native drawing surface reports every requested resized pixel size",allSizes&&surface.SurfaceResizes==4&&surface.DeviceCreates==1&&surface.SurfaceCreates==1&&surface.OwnedReferences==owned,new{allSizes,surface.SurfaceResizes,surface.InputBitmapCreates,surface.OwnedReferences});

@@ -113,7 +113,7 @@ internal static partial class Program
         {
             engine.ResetObservation();var restored=JsonSerializer.Deserialize<AppState>(saved,AtomicStore.JsonOptions)!;engine.Data.Settings=restored.Settings;engine.Data.Sessions.Clear();engine.Data.Sessions.AddRange(restored.Sessions);
             Keyboard.ClearFocus();reset.Minutes=restored.Settings.DayResetMinutes;Call("Render");Call("CollapseToTimer");
-            File.WriteAllText(Path.Combine(output,"day-reset.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),zone=zone.Id,records,scope="Actual owned WPF reset control, isolated records with manual effective time, real main-file locks and backing storage, checkpoint/public engine boundary checks. No OS clock/reset/timezone change or user data modification. Rekey existing records by start time as Mac; no historical interval splitting."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"day-reset.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),zone=zone.Id,records,scope="Actual owned WPF reset control, isolated records with manual effective time, real main-file locks and backing storage, checkpoint/public engine boundary checks. No OS clock/reset/timezone change or user data modification. Rekey existing records by start time as Mac; no historical interval splitting."},AtomicStore.JsonOptions));
         }
     }
 }

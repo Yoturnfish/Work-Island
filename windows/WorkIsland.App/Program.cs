@@ -18,7 +18,7 @@ public static class Program
         try
         {
             if(dataDir.Contains('"') || string.IsNullOrWhiteSpace(dataDir))return 2;
-            normalizedDataDir=Path.TrimEndingDirectorySeparator(Path.GetFullPath(dataDir));
+            normalizedDataDir=RuntimeCompat.TrimEndingDirectorySeparator(Path.GetFullPath(dataDir));
         }
         catch(Exception error)when(error is ArgumentException or NotSupportedException or PathTooLongException)
         {Console.Error.WriteLine("数据目录格式无效。");return 2;}
@@ -32,12 +32,12 @@ public static class Program
         if ((smoke || args.Contains("--interaction-review") || args.Contains("--preview") || args.Contains("--instance-review")) && Value(args, "--data-dir") is null)
         { Console.Error.WriteLine("验收模式必须显式指定独立 --data-dir。"); return 2; }
         if((smoke || args.Contains("--interaction-review") || args.Contains("--preview") || args.Contains("--instance-review")) && string.Equals(
-            normalizedDataDir,Path.TrimEndingDirectorySeparator(Path.GetFullPath(dailyDataDir)),StringComparison.OrdinalIgnoreCase))
+            normalizedDataDir,RuntimeCompat.TrimEndingDirectorySeparator(Path.GetFullPath(dailyDataDir)),StringComparison.OrdinalIgnoreCase))
         {Console.Error.WriteLine("验收模式不可使用日常数据目录。");return 2;}
         var stabilitySeconds=600;
         if(args.Contains("--stability-review") && Value(args,"--review-seconds") is { } duration
             && (!int.TryParse(duration,out stabilitySeconds) || stabilitySeconds<60 || stabilitySeconds>86400))return 2;
-        var mutexName = "Local\\WorkIsland-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalizedDataDir.ToUpperInvariant())))[..20];
+        var mutexName = "Local\\WorkIsland-" + RuntimeCompat.ToHexString(RuntimeCompat.HashData(Encoding.UTF8.GetBytes(normalizedDataDir.ToUpperInvariant())))[..20];
         using var mutex = new Mutex(true, mutexName, out var created);
         if (!created)
         {

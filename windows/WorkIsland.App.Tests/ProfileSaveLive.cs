@@ -33,7 +33,7 @@ internal static partial class Program
         },DispatcherPriority.ContextIdle);
         create.Click+=click;var timer=Field<DispatcherTimer>("timer");timer.Start();
         var source=(HwndSource)PresentationSource.FromVisual(window);var watch=System.Diagnostics.Stopwatch.StartNew();
-        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Own paused profile popup under actual primary-file lock. Official mouse clicks New via related-popup screenshot ID. Release marker removes only lock; production1Hz timer performs background retry. No GUI handler calls after preparation."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Own paused profile popup under actual primary-file lock. Official mouse clicks New via related-popup screenshot ID. Release marker removes only lock; production1Hz timer performs background retry. No GUI handler calls after preparation."},AtomicStore.JsonOptions));
         try
         {
             while(watch.Elapsed.TotalSeconds<300&&!File.Exists(Path.Combine(output,"stop-review.txt")))
@@ -48,7 +48,7 @@ internal static partial class Program
             check("actual failed edit leaves primary bytes intact",bytesPreserved,null);
             check("production background timer saves and refreshes same popup after unlock",savedVisible&&menu.IsOpen&&store.Load().Settings.ActiveProfileId==settings.ActiveProfileId,null);
             check("profile save recovery keeps pause and recognition page",engine.Current.State=="paused"&&ReferenceEquals(Field<FrameworkElement>("activePage"),Field<FrameworkElement>("RecognitionPage")),null);
-            File.WriteAllText(Path.Combine(output,"profile-save-live.json"),JsonSerializer.Serialize(new{appSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),coreSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(TrackingEngine).Assembly.Location))),processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),snapshots,scope="Official mouse clicks existing own profile popup under actual own-data file lock. Marker only releases IO fault; production timer retries without direct Persist/GUI handler calls. Read-only observers; independent paused data, no user profile edits, browser/game/hardware claim."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"profile-save-live.json"),JsonSerializer.Serialize(new{appSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),coreSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(TrackingEngine).Assembly.Location))),processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),snapshots,scope="Official mouse clicks existing own profile popup under actual own-data file lock. Marker only releases IO fault; production timer retries without direct Persist/GUI handler calls. Read-only observers; independent paused data, no user profile edits, browser/game/hardware claim."},AtomicStore.JsonOptions));
         }
         finally{timer.Stop();held?.Dispose();create.Click-=click;menu.IsOpen=false;await Task.Delay(250);}
     }

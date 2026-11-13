@@ -98,7 +98,7 @@ internal static partial class Program
         RenderOptions.SetBitmapScalingMode(nativeImage,BitmapScalingMode.NearestNeighbor);
         var rows=new StackPanel{Background=new SolidColorBrush(System.Windows.Media.Color.FromRgb(29,33,30))};rows.Children.Add(label);rows.Children.Add(image);rows.Children.Add(new TextBlock{Text="托盘实际像素大小",TextAlignment=TextAlignment.Center,Margin=new Thickness(0,0,0,6)});rows.Children.Add(nativeImage);
         var controls=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Center,Margin=new Thickness(12)};rows.Children.Add(controls);
-        var gallery=new Window{Title="Work Island · 单格时钟验收 · "+Environment.ProcessId,Width=420,Height=410,WindowStartupLocation=WindowStartupLocation.CenterScreen,Content=rows,Foreground=System.Windows.Media.Brushes.White,ShowInTaskbar=true,Topmost=false,UseLayoutRounding=true};
+        var gallery=new Window{Title="Work Island · 单格时钟验收 · "+RuntimeCompat.ProcessId,Width=420,Height=410,WindowStartupLocation=WindowStartupLocation.CenterScreen,Content=rows,Foreground=System.Windows.Media.Brushes.White,ShowInTaskbar=true,Topmost=false,UseLayoutRounding=true};
         Action<Bitmap> submitted=bitmap=>
         {
             frames++;var bytes=GlyphBytes(bitmap);using var stream=new MemoryStream(bytes);var source=new BitmapImage();source.BeginInit();source.CacheOption=BitmapCacheOption.OnLoad;source.StreamSource=stream;source.EndInit();source.Freeze();image.Source=source;

@@ -56,7 +56,7 @@ internal static partial class Program
             Record("ready");
             using var process=Process.GetCurrentProcess();
             File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{processId=process.Id,startedUtcTicks=process.StartTime.ToUniversalTime().Ticks.ToString(),windowHandle=(long)new WindowInteropHelper(window).Handle,day,
-                appSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),scope="Passive own-window Keyboard.FocusedElement, IsKeyboardFocused and text/key events. Real keyboard input only through official Computer Use. No focus setting, key injection or input handlers that change product behavior."},AtomicStore.JsonOptions));
+                appSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),scope="Passive own-window Keyboard.FocusedElement, IsKeyboardFocused and text/key events. Real keyboard input only through official Computer Use. No focus setting, key injection or input handlers that change product behavior."},AtomicStore.JsonOptions));
             var finish=Path.Combine(output,"finish.txt");
             while(!File.Exists(finish)&&clock.Elapsed.TotalSeconds<600)await Task.Delay(100);
             Record("finished");check("native interaction review completed before its bounded watchdog",File.Exists(finish),null);

@@ -23,7 +23,7 @@ internal static partial class Program
         var engine=Field<TrackingEngine>("engine");var settings=engine.Data.Settings;var store=Field<AtomicStore>("store");
         settings.Paused=true;settings.Rules=[];settings.Language="zh";settings.ReduceMotion=true;settings.BackgroundStyle="black";
         engine.ResetObservation();Field<DispatcherTimer>("fullscreenTimer").Stop();Field<DispatcherTimer>("focusReturn").Stop();
-        window.Title="Work Island · 样式键盘验收 · "+Environment.ProcessId;window.Left=460;window.Top=300;
+        window.Title="Work Island · 样式键盘验收 · "+RuntimeCompat.ProcessId;window.Left=460;window.Top=300;
         if(live){window.Topmost=true;window.Activate();}
         Call("Persist");Call("Render");
         Call("ToggleExpanded",null,new RoutedEventArgs());Call("OpenRecognition",window,new RoutedEventArgs());await Task.Delay(180);Call("OpenProfilePopover");
@@ -64,7 +64,7 @@ internal static partial class Program
         {
             if(live)
             {
-                Write("ready.json",new{processId=Environment.ProcessId,startedUtcTicks=Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks.ToString(),windowHandle=new WindowInteropHelper(window).Handle.ToInt64(),window.Title,focus=Focus(),paused=settings.Paused,expanded=Field<bool>("isExpanded"),scope="Prepared own actual profile popup; taskbar visibility fixed before HWND creation, current paused state persisted and rendered. Official tool clicks its name field, presses Tab twice and Return. Observers do not handle keys or call Click. Await finish marker after observation."});
+                Write("ready.json",new{processId=RuntimeCompat.ProcessId,startedUtcTicks=Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks.ToString(),windowHandle=new WindowInteropHelper(window).Handle.ToInt64(),window.Title,focus=Focus(),paused=settings.Paused,expanded=Field<bool>("isExpanded"),scope="Prepared own actual profile popup; taskbar visibility fixed before HWND creation, current paused state persisted and rendered. Official tool clicks its name field, presses Tab twice and Return. Observers do not handle keys or call Click. Await finish marker after observation."});
                 await observed.Task.WaitAsync(TimeSpan.FromSeconds(600));
                 var watch=Stopwatch.StartNew();while(!File.Exists(Path.Combine(output,"finish.txt"))){if(watch.Elapsed.TotalSeconds>180)throw new TimeoutException("Finish marker absent");await Task.Delay(75);}
             }

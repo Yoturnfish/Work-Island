@@ -32,7 +32,7 @@ internal static partial class Program
         // this guard; this does not pretend to be native mouse/keyboard input.
         ContextMenuEventArgs ContextOpening()
         {
-            var args=(ContextMenuEventArgs)RuntimeHelpers.GetUninitializedObject(typeof(ContextMenuEventArgs));
+            var args=(ContextMenuEventArgs)TestRuntime.GetUninitializedObject(typeof(ContextMenuEventArgs));
             args.RoutedEvent=ContextMenuService.ContextMenuOpeningEvent;args.Source=color;color.RaiseEvent(args);return args;
         }
         async Task Clear()

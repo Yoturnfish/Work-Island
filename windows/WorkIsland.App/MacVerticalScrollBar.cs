@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -51,7 +52,7 @@ public sealed class MacVerticalScrollBar : ScrollBar
         var range = Math.Max(0, Maximum - Minimum);
         var content = Math.Max(1, range + ViewportSize);
         KnobLength = Math.Min(track, Math.Max(18, track * ViewportSize / content));
-        KnobOffset = range > 0 ? (track - KnobLength) * Math.Clamp((Value - Minimum) / range, 0, 1) : 0;
+        KnobOffset = range > 0 ? (track - KnobLength) * RuntimeCompat.Clamp((Value - Minimum) / range, 0, 1) : 0;
         if (knob is null) return;
         knob.Height = KnobLength;
         knob.Margin = new Thickness(0, KnobOffset, 0, 0);
@@ -64,7 +65,7 @@ public sealed class MacVerticalScrollBar : ScrollBar
         var travel = ActualHeight - KnobLength;
         if (travel > 0)
         {
-            dragValue = Math.Clamp(dragValue + e.VerticalChange * (Maximum - Minimum) / travel, Minimum, Maximum);
+            dragValue = RuntimeCompat.Clamp(dragValue + e.VerticalChange * (Maximum - Minimum) / travel, Minimum, Maximum);
             ScrollTo(dragValue);
         }
         e.Handled = true;
@@ -83,7 +84,7 @@ public sealed class MacVerticalScrollBar : ScrollBar
 
     private void ScrollTo(double value)
     {
-        value = Math.Clamp(value, Minimum, Maximum);
+        value = RuntimeCompat.Clamp(value, Minimum, Maximum);
         if (TemplatedParent is ScrollViewer viewer) viewer.ScrollToVerticalOffset(value);
         else SetCurrentValue(ValueProperty, value);
     }

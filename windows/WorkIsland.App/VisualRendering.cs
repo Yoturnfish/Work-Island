@@ -14,7 +14,7 @@ public sealed class HistoryMatrix : FrameworkElement
     public double Progress { get; set; }
     public bool BottomUp { get; set; }
     public Color Accent { get; set; } = Color.FromRgb(64,255,97);
-    public int FilledCells => Progress <= 0 ? 0 : Progress >= 1 ? Columns * Rows : Math.Clamp((int)(Progress * Columns * Rows),1,Columns * Rows - 1);
+    public int FilledCells => Progress <= 0 ? 0 : Progress >= 1 ? Columns * Rows : RuntimeCompat.Clamp((int)(Progress * Columns * Rows),1,Columns * Rows - 1);
     protected override void OnRender(DrawingContext context)
     {
         for (int c=0;c<Columns;c++) for (int r=0;r<Rows;r++)

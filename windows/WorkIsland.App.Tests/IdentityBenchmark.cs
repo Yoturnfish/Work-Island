@@ -29,7 +29,7 @@ internal static partial class Program
         var production=typeof(WindowsActivity).GetMethod("Application",BindingFlags.Static|BindingFlags.NonPublic)!.CreateDelegate<Func<nint,(string? Identifier,string? Name)>>();
         var rows=new List<object>();
         var foreground=typeof(WindowsActivity).GetMethod("GetForegroundWindow",BindingFlags.Static|BindingFlags.NonPublic)!.CreateDelegate<Func<nint>>()();
-        foreach(var (role,hwnd) in new[]{("owned",new WindowInteropHelper(window).Handle),("foreground",foreground)})
+        foreach(var (role,hwnd) in new (string Role,nint Window)[]{("owned",new WindowInteropHelper(window).Handle),("foreground",foreground)})
         {
             IdentityPid(hwnd,out var targetPid);var old=production(hwnd);var candidate=PrototypeIdentity(hwnd);
             check("native query prototype returns identical identity for "+role+" actual window",old.Identifier==candidate.Item1&&old.Name==candidate.Item2&&old.Identifier is not null,null);
@@ -38,9 +38,9 @@ internal static partial class Program
                 for(var warm=0;warm<10;warm++){if(mode=="production")production(hwnd);else PrototypeIdentity(hwnd);}
                 var allocated=GC.GetAllocatedBytesForCurrentThread();var watch=Stopwatch.StartNew();
                 for(var iteration=0;iteration<300;iteration++){if(mode=="production")production(hwnd);else PrototypeIdentity(hwnd);}
-                watch.Stop();rows.Add(new{role,separateProcess=targetPid!=Environment.ProcessId,round,mode,lookups=300,elapsedMilliseconds=watch.Elapsed.TotalMilliseconds,allocatedBytes=GC.GetAllocatedBytesForCurrentThread()-allocated});
+                watch.Stop();rows.Add(new{role,separateProcess=targetPid!=RuntimeCompat.ProcessId,round,mode,lookups=300,elapsedMilliseconds=watch.Elapsed.TotalMilliseconds,allocatedBytes=GC.GetAllocatedBytesForCurrentThread()-allocated});
             }
         }
-        File.WriteAllText(Path.Combine(output,"identity-benchmark.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),rows,scope="Actual owned HWND and current foreground HWND identity queries only; no titles, path, names or content retained, no input, UI automation, activation or process changes. Same UI thread synchronous microbenchmark. Prototype is not production or complete compatibility implementation."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"identity-benchmark.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),rows,scope="Actual owned HWND and current foreground HWND identity queries only; no titles, path, names or content retained, no input, UI automation, activation or process changes. Same UI thread synchronous microbenchmark. Prototype is not production or complete compatibility implementation."},AtomicStore.JsonOptions));
     }
 }

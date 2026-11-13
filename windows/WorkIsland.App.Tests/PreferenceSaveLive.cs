@@ -31,7 +31,7 @@ internal static partial class Program
         var source=(HwndSource)PresentationSource.FromVisual(window);var watch=System.Diagnostics.Stopwatch.StartNew();
         using(var locked=new FileStream(store.Path,FileMode.Open,FileAccess.Read,FileShare.Read))
         {
-            File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Own isolated paused settings window. Primary file is locked after successful preparation. Official click opens goal picker; Home, Down, Return attempts 2 hours. Preparation ends here; observer only reads own controls, model and disk."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Own isolated paused settings window. Primary file is locked after successful preparation. Official click opens goal picker; Home, Down, Return attempts 2 hours. Preparation ends here; observer only reads own controls, model and disk."},AtomicStore.JsonOptions));
             try
             {
                 while(watch.Elapsed.TotalSeconds<300&&!File.Exists(Path.Combine(output,"stop-review.txt")))await Task.Delay(100);
@@ -41,7 +41,7 @@ internal static partial class Program
                 check("actual failed edit retains settings page and paused state",engine.Current.State=="paused"&&ReferenceEquals(Field<FrameworkElement>("activePage"),Field<FrameworkElement>("SettingsPage")),null);
                 var message=Field<TextBlock>("MessageLabel");var viewport=Field<FrameworkElement>("PageScroller");var bounds=message.TransformToAncestor(viewport).TransformBounds(new Rect(message.RenderSize));
                 check("actual concise failure feedback fits with rounded-edge breathing room",bounds.Left>=0&&bounds.Top>=0&&bounds.Right<=viewport.ActualWidth+.1&&bounds.Bottom<=viewport.ActualHeight-7.5,new{bounds=bounds.ToString(),viewport.ActualWidth,viewport.ActualHeight});
-                File.WriteAllText(Path.Combine(output,"preference-live.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),observations,final=Snapshot(),scope="Official mouse plus keyboard on actual own WPF dropdown under real own-data primary-file lock. Read-only observer after preparation; nested rollback SelectionChanged events are production control synchronization, not extra native actions. Isolated paused data; no user-data, hardware or game acceptance."},AtomicStore.JsonOptions));
+                File.WriteAllText(Path.Combine(output,"preference-live.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),observations,final=Snapshot(),scope="Official mouse plus keyboard on actual own WPF dropdown under real own-data primary-file lock. Read-only observer after preparation; nested rollback SelectionChanged events are production control synchronization, not extra native actions. Isolated paused data; no user-data, hardware or game acceptance."},AtomicStore.JsonOptions));
             }
             finally{picker.SelectionChanged-=changed;}
         }

@@ -19,8 +19,8 @@ public sealed record InstanceResponse(bool Success,string Status,InstanceIdentit
 public static class InstanceProtocol
 {
     private const int MaximumPacket=16384;
-    public static string Normalize(string directory)=>Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
-    public static string PipeName(string directory)=>"WorkIsland-Control-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Normalize(directory).ToUpperInvariant())))[..20];
+    public static string Normalize(string directory)=>RuntimeCompat.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+    public static string PipeName(string directory)=>"WorkIsland-Control-"+RuntimeCompat.ToHexString(RuntimeCompat.HashData(Encoding.UTF8.GetBytes(Normalize(directory).ToUpperInvariant())))[..20];
     public static async Task WriteAsync<T>(Stream stream,T value,CancellationToken token)
     {
         var bytes=JsonSerializer.SerializeToUtf8Bytes(value,AtomicStore.JsonOptions);
@@ -53,14 +53,14 @@ public sealed class InstanceControlServer : IDisposable
     {
         this.window=window;
         using var process=Process.GetCurrentProcess();
-        identity=new(Environment.ProcessId,process.StartTime.ToUniversalTime().Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),InstanceProtocol.Normalize(directory),typeof(IslandWindow).Assembly.GetName().Version!.ToString(),Environment.ProcessPath??"");
+        identity=new(RuntimeCompat.ProcessId,process.StartTime.ToUniversalTime().Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),InstanceProtocol.Normalize(directory),typeof(IslandWindow).Assembly.GetName().Version!.ToString(),RuntimeCompat.ProcessPath??"");
         worker=Task.Run(RunAsync);
     }
     private async Task RunAsync()
     {
         var token=stop.Token;
         NamedPipeServerStream pipe;
-        try{pipe=new(InstanceProtocol.PipeName(identity.DataDirectory),PipeDirection.InOut,1,PipeTransmissionMode.Byte,PipeOptions.Asynchronous|PipeOptions.CurrentUserOnly|PipeOptions.FirstPipeInstance);}
+        try{pipe=InstancePipes.CreateServer(InstanceProtocol.PipeName(identity.DataDirectory));}
         catch(Exception error)when(error is IOException or UnauthorizedAccessException){Fault=error.Message;return;}
         using(pipe)
         while(!token.IsCancellationRequested)
@@ -112,8 +112,9 @@ public static class InstanceControlClient
     public static async Task<InstanceResponse> RequestAsync(string directory,InstanceRequest request,CancellationToken token=default)
     {
         using var timeout=CancellationTokenSource.CreateLinkedTokenSource(token);timeout.CancelAfter(TimeSpan.FromSeconds(7));
-        using var pipe=new NamedPipeClientStream(".",InstanceProtocol.PipeName(directory),PipeDirection.InOut,PipeOptions.Asynchronous|PipeOptions.CurrentUserOnly);
+        using var pipe=InstancePipes.CreateClient(InstanceProtocol.PipeName(directory));
         await pipe.ConnectAsync(1500,timeout.Token).ConfigureAwait(false);
+        InstancePipes.VerifyServerOwner(pipe);
         await InstanceProtocol.WriteAsync(pipe,request,timeout.Token).ConfigureAwait(false);
         var response=await InstanceProtocol.ReadAsync<InstanceResponse>(pipe,timeout.Token).ConfigureAwait(false);
         if(response.Success&&response.Instance is null)return new(false,"missing-identity");
@@ -130,6 +131,10 @@ public static class InstanceControlClient
             using var process=requestExit?Process.GetProcessById(expectedPid):null;
             if(requestExit)
             {
+                // Retain this exact OS process before asking it to exit. The
+                // Framework Process adapter otherwise reopens by PID after
+                // the reply, when a quick, successful exit can already be gone.
+                _=process!.Handle;
                 if(process!.StartTime.ToUniversalTime().Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture)!=expectedStart)
                 {Console.WriteLine(JsonSerializer.Serialize(new InstanceResponse(false,"identity-mismatch"),AtomicStore.JsonOptions));return 3;}
             }
@@ -139,7 +144,8 @@ public static class InstanceControlClient
                 {
                     using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(5));
                     await process!.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
-                    response=response with{Success=process.ExitCode==0,Status=process.ExitCode==0?"exited":"abnormal-exit"};
+                    var exitCode=process!.ExitCode;
+                    response=response with{Success=exitCode==0,Status=exitCode==0?"exited":"abnormal-exit"};
                 }
                 Console.WriteLine(JsonSerializer.Serialize(response,AtomicStore.JsonOptions));return response.Success?0:3;
             }

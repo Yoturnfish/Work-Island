@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -35,7 +36,7 @@ internal sealed class IslandSurfaces : IDisposable
     public int BackdropResult { get; private set; } = unchecked((int)0x80004001);
     public bool BackdropVisible => backdrop is not null && IsWindowVisible(backdrop.Handle);
     public bool ShadowVisible => shadow.IsVisible;
-    public nint BackdropHandle => backdrop?.Handle ?? 0;
+    public nint BackdropHandle => backdrop?.Handle ?? IntPtr.Zero;
     public nint ShadowHandle => new WindowInteropHelper(shadow).Handle;
     public void SetBackdropBlend(double value)
     {
@@ -63,7 +64,7 @@ internal sealed class IslandSurfaces : IDisposable
         var shadowSource = HwndSource.FromHwnd(new WindowInteropHelper(shadow).EnsureHandle())!;
         SetWindowLongPtr(shadowSource.Handle, -20, GetWindowLongPtr(shadowSource.Handle, -20) | 0x08000020 | 0x80);
         shadowSource.AddHook(PassThrough);
-        if(monitorSystem&&OperatingSystem.IsWindowsVersionAtLeast(10,0,22621))
+        if(monitorSystem&&RuntimeCompat.IsWindowsVersionAtLeast(10,0,22621))
         {
             try{effectsMonitor=new SystemEffectsMonitor(PostPolicyRefresh);SystemEffectsWatchResult=0;}
             catch(Exception error)when(error is COMException or InvalidOperationException or ArgumentException or EntryPointNotFoundException or DllNotFoundException)
@@ -77,7 +78,7 @@ internal sealed class IslandSurfaces : IDisposable
     private bool RefreshSystemBackdrop()
     {
         var allowed=false;
-        try{allowed=OperatingSystem.IsWindowsVersionAtLeast(10,0,22621)&&effectsAllowed()&&(effectsMonitor?.Enabled??true);}
+        try{allowed=RuntimeCompat.IsWindowsVersionAtLeast(10,0,22621)&&effectsAllowed()&&(effectsMonitor?.Enabled??true);}
         catch(Exception error)when(error is System.IO.IOException or UnauthorizedAccessException or System.Security.SecurityException or COMException or InvalidOperationException)
         {BackdropResult=error.HResult;}
         if(lastEffectsAllowed==allowed&&(!allowed||NativeBackdropAvailable))return false;
@@ -138,7 +139,7 @@ internal sealed class IslandSurfaces : IDisposable
     }
     public void UpdateMaterialGlass(double amount)
     {
-        amount=Math.Clamp(amount,0,1);
+        amount=RuntimeCompat.Clamp(amount,0,1);
         var changed=Math.Abs(amount-glassAmount)>.000001;glassAmount=amount;
         if(changed)nativeBackdrop?.SetBlend(.25*amount);
         glass = amount>0;

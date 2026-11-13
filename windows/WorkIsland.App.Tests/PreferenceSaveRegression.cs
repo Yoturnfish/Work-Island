@@ -93,7 +93,7 @@ internal static partial class Program
             check("English setting rejection remains concise English failure feedback",Error()&&Field<TextBlock>("MessageLabel").Text.Contains("Unchanged")&&!Field<TextBlock>("MessageLabel").Text.Contains("已保存"),Field<TextBlock>("MessageLabel").Text);
         }
         Select("GoalPicker","4");Select("LanguagePicker","zh");
-        File.WriteAllText(Path.Combine(output,"preference-save.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),observations,scope="Actual primary-file locks, actual WPF selection and slider events, controlled paused/isolated data. Failure is a real IO rejection; not native input, physical OS session or game acceptance."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"preference-save.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),observations,scope="Actual primary-file locks, actual WPF selection and slider events, controlled paused/isolated data. Failure is a real IO rejection; not native input, physical OS session or game acceptance."},AtomicStore.JsonOptions));
     }
 }
 

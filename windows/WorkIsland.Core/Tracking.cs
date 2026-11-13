@@ -48,13 +48,13 @@ public sealed class Settings
         new("EXCEL.exe", "Excel"), new("POWERPNT.exe", "PowerPoint"), new("Obsidian.exe", "Obsidian")];
     public void Validate()
     {
-        if (!double.IsFinite(GoalSeconds) || GoalSeconds <= 0 || GoalSeconds > 24 * 3600
-            || !double.IsFinite(AwayThreshold) || AwayThreshold < 1 || AwayThreshold > 3600
+        if (!RuntimeCompat.IsFinite(GoalSeconds) || GoalSeconds <= 0 || GoalSeconds > 24 * 3600
+            || !RuntimeCompat.IsFinite(AwayThreshold) || AwayThreshold < 1 || AwayThreshold > 3600
             || DayResetMinutes < 0 || DayResetMinutes >= 1440
-            || !double.IsFinite(IslandScale) || IslandScale < 0.5 || IslandScale > 1
+            || !RuntimeCompat.IsFinite(IslandScale) || IslandScale < 0.5 || IslandScale > 1
             || ProgressStyle is not ("matrix" or "waveform") || DurationStyle is not ("hoursMinutes" or "minutesSeconds") || DisplayMode is not ("floating" or "menuBar")
             || DisplayTitle is null || DisplayTitle.Length > 60
-            || BackgroundStyle is not ("black" or "glass") || !double.IsFinite(BackgroundOpacity) || BackgroundOpacity < .45 || BackgroundOpacity > 1
+            || BackgroundStyle is not ("black" or "glass") || !RuntimeCompat.IsFinite(BackgroundOpacity) || BackgroundOpacity < .45 || BackgroundOpacity > 1
             || Language is not ("zh" or "en") || !ColorProfilesService.Accents.Contains(Accent)
             || ColorProfiles is null || ColorProfiles.Select(p => p?.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count() != ColorProfiles.Count
             || ColorProfiles.Count(p=>p?.IsDefault==true)>1 || ActiveProfileId is not null && !Guid.TryParse(ActiveProfileId,out _)
@@ -63,7 +63,7 @@ public sealed class Settings
                 || p.Rules.Any(r => r is null || string.IsNullOrWhiteSpace(r.Identifier) || string.IsNullOrWhiteSpace(r.DisplayName)) || !RecognitionRules.ValidWebsites(p.Websites))
             || !RecognitionRules.ValidWebsites(Websites)
             || Rules is null || Rules.Any(r => r is null || string.IsNullOrWhiteSpace(r.Identifier) || string.IsNullOrWhiteSpace(r.DisplayName))
-            || WindowX is double x && !double.IsFinite(x) || WindowY is double y && !double.IsFinite(y))
+            || WindowX is double x && !RuntimeCompat.IsFinite(x) || WindowY is double y && !RuntimeCompat.IsFinite(y))
             throw new InvalidDataException("设置文件包含无效值。");
     }
 }
@@ -93,7 +93,7 @@ public sealed class AppState
         // A missing legacy field keeps Session's empty-string default, but an
         // explicit null cannot be a usable history grouping/editor key. Reject
         // it before the UI or migration so AtomicStore can recover safely.
-        if (Sessions.Any(s => s is null || s.ApplicationIdentifier is null || !double.IsFinite(s.EffectiveSeconds) || s.EffectiveSeconds < 0 || s.EndedAt < s.StartedAt
+        if (Sessions.Any(s => s is null || s.ApplicationIdentifier is null || !RuntimeCompat.IsFinite(s.EffectiveSeconds) || s.EffectiveSeconds < 0 || s.EndedAt < s.StartedAt
             || !DateOnly.TryParseExact(s.DayKey, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _)))
             throw new InvalidDataException("计时记录包含无效值。");
     }
@@ -132,7 +132,7 @@ public sealed class TrackingEngine(AppState data, TimeZoneInfo? zone = null)
     public DateTimeOffset? LastObservation { get; private set; }
     private double? lastMonotonicSeconds;
     public double TodaySeconds(DateTimeOffset now) => Data.Sessions.Where(s => s.DayKey == LogicalDay.Key(now, Zone, Data.Settings.DayResetMinutes)).Sum(s => s.EffectiveSeconds);
-    public double Progress(DateTimeOffset now) => Math.Clamp(TodaySeconds(now) / Data.Settings.GoalSeconds, 0, 1);
+    public double Progress(DateTimeOffset now) => RuntimeCompat.Clamp(TodaySeconds(now) / Data.Settings.GoalSeconds, 0, 1);
 
     public void Observe(DateTimeOffset now, ActivityInput input) => Observe(now, input, null);
 
@@ -141,7 +141,7 @@ public sealed class TrackingEngine(AppState data, TimeZoneInfo? zone = null)
     // remains available for deterministic timestamp fixtures.
     public void Observe(DateTimeOffset now, ActivityInput input, double? monotonicSeconds)
     {
-        if (monotonicSeconds is double clock && !double.IsFinite(clock))
+        if (monotonicSeconds is double clock && !RuntimeCompat.IsFinite(clock))
             throw new ArgumentOutOfRangeException(nameof(monotonicSeconds));
         // Credit only the previously observed tracking interval. Restart and sleep gaps earn nothing.
         if (LastObservation is DateTimeOffset previous && Current.Target is { } target)
@@ -152,11 +152,11 @@ public sealed class TrackingEngine(AppState data, TimeZoneInfo? zone = null)
             // A late WM_TIMECHANGE must not turn clock correction into work.
             // Small clock slews retain monotonic duration; jumps discard this
             // observation, just like a sleep or delayed dispatcher callback.
-            if (wallElapsed > 0 && elapsed > 0 && elapsed <= 5 && Math.Abs(wallElapsed - elapsed) <= 1 && double.IsFinite(input.IdleSeconds))
+            if (wallElapsed > 0 && elapsed > 0 && elapsed <= 5 && Math.Abs(wallElapsed - elapsed) <= 1 && RuntimeCompat.IsFinite(input.IdleSeconds))
             {
                 var fraction = 1d;
-                if (input.IdleSeconds >= Data.Settings.AwayThreshold && double.IsFinite(input.IdleSeconds))
-                    fraction = Math.Clamp((elapsed - (input.IdleSeconds - Data.Settings.AwayThreshold)) / elapsed, 0, 1);
+                if (input.IdleSeconds >= Data.Settings.AwayThreshold && RuntimeCompat.IsFinite(input.IdleSeconds))
+                    fraction = RuntimeCompat.Clamp((elapsed - (input.IdleSeconds - Data.Settings.AwayThreshold)) / elapsed, 0, 1);
                 var end = previous.AddTicks((long)Math.Round((now - previous).Ticks * fraction));
                 if (end > previous) AddInterval(previous, end, target, elapsed * fraction);
             }

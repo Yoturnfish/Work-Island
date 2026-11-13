@@ -41,7 +41,11 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 SetupArchitecture=x64
+#ifdef BuiltinFramework
+MinVersion=10.0.18362
+#else
 MinVersion=10.0.17763
+#endif
 WizardStyle=modern
 WizardImageFile=
 WizardSmallImageFile=
@@ -69,6 +73,8 @@ Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.i
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
+chinesesimplified.FrameworkRequired=此轻量版需要 .NET Framework 4.8。Windows 10 1903 及更新版本、Windows 11 通常已包含它。请先恢复此系统组件，或使用附带运行环境的完整版本。
+english.FrameworkRequired=This lightweight edition requires .NET Framework 4.8, included with Windows 10 1903 and later and Windows 11. Restore that system component or use the full bundled-runtime edition.
 chinesesimplified.DataPreserved=安装和升级保留工作记录与设置。卸载后数据仍保存在：
 english.DataPreserved=Installation and upgrades preserve work history and settings. Uninstall also keeps your data at:
 chinesesimplified.Launch=启动 Work Island
@@ -290,8 +296,19 @@ begin
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
+#ifdef BuiltinFramework
+var FrameworkRelease: Cardinal;
+#endif
 begin
   Result := ValidateDirectory;
+#ifdef BuiltinFramework
+  if Result = '' then begin
+    if not RegQueryDWordValue(HKLM64, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', FrameworkRelease) then
+      Result := CustomMessage('FrameworkRequired')
+    else if FrameworkRelease < 528040 then
+      Result := CustomMessage('FrameworkRequired');
+  end;
+#endif
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;

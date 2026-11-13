@@ -104,7 +104,7 @@ internal static partial class Program
             Check("new window gets its own next scan after obsolete worker completes",Read(sampler,(nint)(-1))=="https://second.example/");
         }
         catch(Exception error){Check("sampler fixture completed",false,error.ToString());}
-        File.WriteAllText(Path.Combine(output,"browser-sampler.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),checks=rows.Count,failures,rows,scope="Production BrowserSampler public Read/Clear with owned controlled pending tasks and synthetic zero/invalid HWNDs; default reader never reaches external UIA for these handles. No WPF application, actual browser URL, UI input, system setting or user data. Context round trip, expiry, serial work and recovery; TrackingDecision checks use resulting URL."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"browser-sampler.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),checks=rows.Count,failures,rows,scope="Production BrowserSampler public Read/Clear with owned controlled pending tasks and synthetic zero/invalid HWNDs; default reader never reaches external UIA for these handles. No WPF application, actual browser URL, UI input, system setting or user data. Context round trip, expiry, serial work and recovery; TrackingDecision checks use resulting URL."},AtomicStore.JsonOptions));
         Console.WriteLine($"Browser sampler: {rows.Count-failures}/{rows.Count} passed; failures={failures}");return failures==0?0:1;
     }
 }

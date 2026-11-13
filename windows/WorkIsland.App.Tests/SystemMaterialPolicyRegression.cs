@@ -31,7 +31,7 @@ internal static partial class Program
         var monitor=monitorType.GetConstructor(BindingFlags.Instance|BindingFlags.NonPublic,null,[typeof(Action)],null)!.Invoke([callback]);var handler=(nint)monitorType.GetField("handler",Flags)!.GetValue(monitor)!;Marshal.AddRef(handler);
         try
         {
-            var invoke=Marshal.GetDelegateForFunctionPointer<PolicyInvoke>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(handler),3*nint.Size));var uiThread=Environment.CurrentManagedThreadId;
+            var invoke=Marshal.GetDelegateForFunctionPointer<PolicyInvoke>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(handler),3*IntPtr.Size));var uiThread=Environment.CurrentManagedThreadId;
             var result=await Task.Run(()=>invoke(handler,0,0));check("registered WinRT delegate ABI invokes safely from a worker thread",result==0&&callbackCount==1&&callbackThread!=uiThread,new{result,callbackCount,callbackThread,uiThread});
             ((IDisposable)monitor).Dispose();result=await Task.Run(()=>invoke(handler,0,0));
             check("event removal releases monitor references and detaches late callbacks",result==0&&callbackCount==1&&(int)monitorType.GetProperty("OwnedReferences",Flags)!.GetValue(monitor)! == 0&&(int)monitorType.GetProperty("RemoveResult",Flags)!.GetValue(monitor)! == 0,null);
@@ -47,7 +47,7 @@ internal static partial class Program
         float Blend()
         {
             var host=SurfaceField("nativeBackdrop")!;var visual=(nint)host.GetType().GetField("visual",Flags)!.GetValue(host)!;
-            var getter=Marshal.GetDelegateForFunctionPointer<PolicyGetFloat>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(visual),22*nint.Size));Marshal.ThrowExceptionForHR(getter(visual,out var value));return value;
+            var getter=Marshal.GetDelegateForFunctionPointer<PolicyGetFloat>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(visual),22*IntPtr.Size));Marshal.ThrowExceptionForHR(getter(visual,out var value));return value;
         }
         Color BackgroundColor()=>((LinearGradientBrush)Field<Border>("OuterBorder").Background).GradientStops[0].Color;
         void Notification(int message)=>surfaceType.GetMethod("ForegroundChanged",Flags)!.Invoke(surfaces,[new WindowInteropHelper(window).Handle,message,(nint)0,(nint)0,false]);
@@ -115,7 +115,7 @@ internal static partial class Program
         finally
         {
             typeof(IslandWindow).GetField("fidelityBackground",Flags)!.SetValue(window,null);background.Close();
-            File.WriteAllText(Path.Combine(output,"system-material-policy.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),rows,scope="Isolated product HWND and data, injected read-only policy predicate, direct calls to the product source-hook callback with WM_SETTINGCHANGE/WM_THEMECHANGED identifiers. No OS setting change, registry write, broadcast, actual OS notification delivery or external input claim. Actual native compositor, fallback pixels and ownership objects observed."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"system-material-policy.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),rows,scope="Isolated product HWND and data, injected read-only policy predicate, direct calls to the product source-hook callback with WM_SETTINGCHANGE/WM_THEMECHANGED identifiers. No OS setting change, registry write, broadcast, actual OS notification delivery or external input claim. Actual native compositor, fallback pixels and ownership objects observed."},AtomicStore.JsonOptions));
         }
     }
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]private delegate int PolicyGetFloat(nint self,out float value);

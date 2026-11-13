@@ -26,9 +26,9 @@ internal static partial class Program
             var now=DateTimeOffset.Now;
             foreach(var offset in new[]{-7305,-3652,0})engine.Data.Sessions.Add(new(){ApplicationIdentifier="history-perf.exe",ApplicationName="Performance fixture",DayKey=today.AddDays(offset).ToString("yyyy-MM-dd"),StartedAt=now.AddDays(offset),EndedAt=now.AddDays(offset).AddHours(1),EffectiveSeconds=3600});
             Call("ToggleExpanded",null,new RoutedEventArgs());await Task.Delay(300);Call("OpenHistory",window,new RoutedEventArgs());await Task.Delay(300);
-            var allocation=GC.GetTotalAllocatedBytes(true);var watch=Stopwatch.StartNew();Call("ShowHistoryStatistics");window.UpdateLayout();watch.Stop();
+            var allocation=TestRuntime.GetTotalAllocatedBytes(true);var watch=Stopwatch.StartNew();Call("ShowHistoryStatistics");window.UpdateLayout();watch.Stop();
             var rows=Field<StackPanel>("HistoryRows");var scroller=rows.Children.OfType<ScrollViewer>().Single();var elements=Elements(scroller);
-            var evidence=new{days=7306,visualElements=elements,elapsedMs=watch.Elapsed.TotalMilliseconds,allocatedBytes=GC.GetTotalAllocatedBytes(true)-allocation};
+            var evidence=new{days=7306,visualElements=elements,elapsedMs=watch.Elapsed.TotalMilliseconds,allocatedBytes=TestRuntime.GetTotalAllocatedBytes(true)-allocation};
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(Field<AtomicStore>("store").Path)!,"history-performance.json"),JsonSerializer.Serialize(evidence,AtomicStore.JsonOptions));
             check("twenty years of history use bounded realized visuals",elements<100,evidence);
             check("twenty-year statistics open within 500ms",watch.Elapsed.TotalMilliseconds<500,evidence);

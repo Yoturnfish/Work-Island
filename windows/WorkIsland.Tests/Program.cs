@@ -13,6 +13,7 @@ void Assert(bool condition, string message = "Assertion failed") { if (!conditio
 void Near(double actual, double expected) => Assert(Math.Abs(actual - expected) < 0.00001, $"{actual} != {expected}");
 void Throws(Action action) { try { action(); } catch (Exception) { return; } throw new Exception("Expected failure"); }
 var options = AtomicStore.JsonOptions;
+RuntimeCompatibilityScenarios.Run(Test);
 var cases = JsonSerializer.Deserialize<List<Fixture>>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "activity-decision-cases.json")), options)!;
 foreach (var fixture in cases) Test("shared vector: " + fixture.Name, () =>
 {

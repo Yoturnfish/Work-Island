@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -56,7 +57,7 @@ public sealed partial class PixelProgress : Grid
     public void Update(double value, string activity, string progressStyle, SolidColorBrush brush, bool reduceMotion, int columns, bool awayBreathing = true)
     {
         breathingAllowed = awayBreathing;
-        progress = Math.Clamp(value, 0, 1); state = activity; reduced = reduceMotion;
+        progress = RuntimeCompat.Clamp(value, 0, 1); state = activity; reduced = reduceMotion;
         var structureChanged = style != progressStyle || lastColumns != columns;
         style = progressStyle; Columns = columns;
         if (!ReferenceEquals(accent, brush)||!accentObserved) { if (accentObserved) accent.Changed -= AccentChanged; accent = brush; if(!unloaded){accent.Changed += AccentChanged; accentObserved = true;}else accentObserved=false; }
@@ -67,7 +68,7 @@ public sealed partial class PixelProgress : Grid
     {
         if (ActualWidth <= 0 || ActualHeight <= 0) return;
         var elements = style == "matrix" ? Columns * 3 : 37;
-        var count = progress <= 0 ? 0 : progress >= 1 ? elements : style == "matrix" ? (int)(progress * elements) : Math.Clamp((int)(progress * elements), 1, elements - 1);
+        var count = progress <= 0 ? 0 : progress >= 1 ? elements : style == "matrix" ? (int)(progress * elements) : RuntimeCompat.Clamp((int)(progress * elements), 1, elements - 1);
         if (!force && count == lastCount && lastWidth == ActualWidth && lastHeight == ActualHeight) return;
         GeometryVersion++;
         var a = new GeometryGroup(); var b = new GeometryGroup();
@@ -137,7 +138,7 @@ public sealed partial class PixelProgress : Grid
         if(nativePulseSuspended==value)return;nativePulseSuspended=value;pulseClock?.Controller?.Remove();pulseClock=null;unfilled.BeginAnimation(OpacityProperty,null);unfilled.Opacity=PulseBaseOpacity;
         if(!value)StartWpfPulse();
     }
-    private double CurrentScanPhase=>(Stopwatch.GetElapsedTime(scanEpoch).TotalSeconds/2.8)%1;
+    private double CurrentScanPhase=>(RuntimeCompat.GetElapsedTime(scanEpoch).TotalSeconds/2.8)%1;
     private void AccentChanged(object? sender, EventArgs e)
     {
         UpdateBandColors();

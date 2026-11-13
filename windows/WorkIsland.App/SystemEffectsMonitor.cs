@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Runtime.InteropServices;
 
 namespace WorkIsland.App;
@@ -16,7 +17,7 @@ internal sealed class SystemEffectsMonitor:IDisposable
     internal int OwnedReferences=>(instance!=0?1:0)+(settings!=0?1:0)+(handler!=0?1:0);
     internal bool Enabled
     {
-        get{ObjectDisposedException.ThrowIf(disposed,this);Marshal.ThrowExceptionForHR(Fn<GetBoolean>(settings,6)(settings,out var enabled));return enabled!=0;}
+        get{RuntimeCompat.ThrowIfDisposed(disposed,this);Marshal.ThrowExceptionForHR(Fn<GetBoolean>(settings,6)(settings,out var enabled));return enabled!=0;}
     }
     internal SystemEffectsMonitor(Action changed)
     {
@@ -27,7 +28,7 @@ internal sealed class SystemEffectsMonitor:IDisposable
             const string name="Windows.UI.ViewManagement.UISettings";
             Marshal.ThrowExceptionForHR(WindowsCreateString(name,name.Length,out var text));
             try{Marshal.ThrowExceptionForHR(RoActivateInstance(text,out instance));}finally{WindowsDeleteString(text);}
-            var id=new Guid("52bb3002-919b-4d6b-9b78-8dd66ff4b93b");Marshal.ThrowExceptionForHR(Marshal.QueryInterface(instance,in id,out settings));
+            var id=new Guid("52bb3002-919b-4d6b-9b78-8dd66ff4b93b");Marshal.ThrowExceptionForHR(RuntimeCompat.QueryInterface(instance,id,out settings));
             handler=Marshal.GetComInterfaceForObject(sink,typeof(ISystemEffectsChanged));
             Marshal.ThrowExceptionForHR(Fn<AddEvent>(settings,7)(settings,handler,out token));Subscribed=true;
             _=Enabled;
@@ -58,7 +59,7 @@ internal sealed class SystemEffectsMonitor:IDisposable
             catch(Exception error){return error.HResult;}
         }
     }
-    private static T Fn<T>(nint value,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(value),slot*nint.Size));
+    private static T Fn<T>(nint value,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(value),slot*IntPtr.Size));
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]private delegate int GetBoolean(nint self,out byte value);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]private delegate int AddEvent(nint self,nint callback,out long token);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]private delegate int RemoveEvent(nint self,long token);

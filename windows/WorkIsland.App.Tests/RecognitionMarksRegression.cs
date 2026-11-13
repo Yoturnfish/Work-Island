@@ -37,7 +37,7 @@ internal static partial class Program
             check("two browsers expose separate rows for one normalized website",settings.Websites.Count==0&&Mark(edge)==""&&Mark(chrome)=="",Snapshot(popup));
             if(live)
             {
-                File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,window.Title,scope="Two browser identities and same URL from controlled source. Popup prepared by fixture; only official native mouse input is allowed after this marker. Original product Click handlers mutate independent data."},AtomicStore.JsonOptions));
+                File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,window.Title,scope="Two browser identities and same URL from controlled source. Popup prepared by fixture; only official native mouse input is allowed after this marker. Original product Click handlers mutate independent data."},AtomicStore.JsonOptions));
                 for(var stage=1;stage<=2;stage++)
                 {
                     var watch=Stopwatch.StartNew();var marker=Path.Combine(output,$"stage-{stage}.txt");

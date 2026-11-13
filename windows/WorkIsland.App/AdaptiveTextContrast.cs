@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -22,7 +23,7 @@ internal sealed class BackdropLuminanceSampler : IDisposable
         luminance=0;var started=Stopwatch.GetTimestamp();
         try
         {
-            width=Math.Clamp(width,1,1024);
+            width=RuntimeCompat.Clamp(width,1,1024);
             if(bitmap?.Width!=width)
             {
                 Dispose();bitmap=new(width,1,Imaging.PixelFormat.Format32bppRgb);
@@ -37,17 +38,17 @@ internal sealed class BackdropLuminanceSampler : IDisposable
         }
         catch(Exception error)when(error is Win32Exception or ExternalException or ArgumentException or InvalidOperationException)
         { return false; }
-        finally{LastMilliseconds=Stopwatch.GetElapsedTime(started).TotalMilliseconds;}
+        finally{LastMilliseconds=RuntimeCompat.GetElapsedTime(started).TotalMilliseconds;}
     }
     private double Mean(int from,int to)
     {
-        Span<double> values=stackalloc double[32];var width=Math.Max(1,to-from);var count=Math.Min(width,values.Length);
+        var values=new double[32];var width=Math.Max(1,to-from);var count=Math.Min(width,values.Length);
         for(var i=0;i<count;i++)
         {
             var at=(from+(int)((i+.5)*width/count))*4;
             values[i]=TextContrastPolicy.Luminance(pixels[at+2],pixels[at+1],pixels[at]);
         }
-        values[..count].Sort();var trim=count/8;double total=0;
+        Array.Sort(values,0,count);var trim=count/8;double total=0;
         for(var i=trim;i<count-trim;i++)total+=values[i];
         return total/(count-2*trim);
     }
@@ -64,7 +65,7 @@ internal sealed class TextContrastPolicy
     internal void Reset(){initialized=false;pending=0;DarkInk=false;}
     internal void Observe(double luminance)
     {
-        if(!double.IsFinite(luminance)||luminance<0||luminance>1)return;
+        if(!RuntimeCompat.IsFinite(luminance)||luminance<0||luminance>1)return;
         if(!initialized){initialized=true;DarkInk=luminance>.20;pending=0;return;}
         var change=DarkInk?luminance<.16:luminance>.24;
         if(!change){pending=0;return;}
@@ -86,7 +87,7 @@ public partial class IslandWindow
         if(engine.Data.Settings.BackgroundStyle!="glass"||IsMenuBar||OnboardingActive){textContrast.Reset();return;}
         if(!nativeForegroundEnabled||!IsLoaded||!IsVisible||suspended||fullscreenSuppressed||startupSuppressed||isExpanded||!CompactPanel.IsVisible)return;
         var now=Stopwatch.GetTimestamp();
-        if(lastContrastSample!=0&&Stopwatch.GetElapsedTime(lastContrastSample,now).TotalSeconds<1)return;
+        if(lastContrastSample!=0&&RuntimeCompat.GetElapsedTime(lastContrastSample,now).TotalSeconds<1)return;
         FrameworkElement? label=TitleLabel.Visibility==Visibility.Visible?TitleLabel:TitleEditor.Visibility==Visibility.Visible?TitleEditor:null;
         if(label is null||label.ActualWidth<=0)return;
         // Both ends use screen pixels so DPI and window scale are accounted for.

@@ -34,7 +34,7 @@ internal static class WebsiteAddressScenarios
         });
         test("website limit applies to normalized host and still rejects oversized keywords",()=>
         {
-            var host=string.Join('.',new string('a',63),new string('b',63),new string('c',63),new string('d',61));
+            var host=string.Join(".",new string('a',63),new string('b',63),new string('c',63),new string('d',61));
             Require(host.Length==253&&RecognitionRules.Website(host) is not null);
             Require(RecognitionRules.Website(host+"d") is null&&RecognitionRules.Website(new string('a',254)) is null);
         });

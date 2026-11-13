@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -76,7 +77,7 @@ internal static partial class Program
                 File.WriteAllText(Path.Combine(folder,"native-scan-results.json"),JsonSerializer.Serialize(new
                 {
                     completed=true,layered,uiThread=uiId,processorCount=Environment.ProcessorCount,samples,
-                    productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),
+                    productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),
                     limitations="Isolated composition experiment only: native scan omits filled-cell glow; no product integration, wave, state transitions, dynamic DPI changes, popup/game avoidance or real input acceptance. Both paths use the same host, 200.4x24 DIP, 30x3 geometry, color and 2.8s period. CPU is own-process only, excludes DWM/GPU/system-wide cost. Four-second samples are not long-run acceptance."
                 },AtomicStore.JsonOptions));
             }
@@ -167,15 +168,15 @@ internal sealed class NativeScanScene:IDisposable
     {
         // WinRT type-system UUID-v5 derivation; QI must succeed before any call.
         var signature=$"pinterface({{913337e9-11a1-4345-a3a2-4e7f956e222d}};rc(Windows.UI.Composition.{type};{{{defaultInterface}}}))";
-        var bytes=new List<byte>(new Guid("11f47ad5-7b73-42c0-abae-878b1e16adee").ToByteArray(bigEndian:true));
-        bytes.AddRange(System.Text.Encoding.UTF8.GetBytes(signature));var hash=SHA1.HashData(bytes.ToArray());hash[6]=(byte)((hash[6]&15)|0x50);hash[8]=(byte)((hash[8]&63)|0x80);
-        return Query(collection,new Guid(hash.AsSpan(0,16),bigEndian:true).ToString());
+        var bytes=new List<byte>(RuntimeCompat.GuidBigEndianBytes(new Guid("11f47ad5-7b73-42c0-abae-878b1e16adee")));
+        bytes.AddRange(System.Text.Encoding.UTF8.GetBytes(signature));var hash=RuntimeCompat.Sha1(bytes.ToArray());hash[6]=(byte)((hash[6]&15)|0x50);hash[8]=(byte)((hash[8]&63)|0x80);
+        return Query(collection,RuntimeCompat.GuidFromBigEndianBytes(hash.Take(16).ToArray()).ToString());
     }
-    private nint Query(nint value,string guid){var id=new Guid(guid);Hr(Marshal.QueryInterface(value,in id,out var result));Keep(result);return result;}
+    private nint Query(nint value,string guid){var id=new Guid(guid);Hr(RuntimeCompat.QueryInterface(value,id,out var result));Keep(result);return result;}
     private nint Create(nint value,int slot){Hr(Fn<CreateValue>(value,slot)(value,out var result));Keep(result);return result;}
     private static T Fn<T>(nint value,int slot)where T:Delegate
     {
-        return Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(value),slot*nint.Size));
+        return Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(value),slot*IntPtr.Size));
     }
     private static void Hr(int result)=>Marshal.ThrowExceptionForHR(result);
     public void Dispose()

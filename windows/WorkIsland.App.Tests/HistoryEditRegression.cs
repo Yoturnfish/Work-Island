@@ -111,6 +111,6 @@ internal static partial class Program
             check("actual composed failed-save view stays on history details",Field<FrameworkElement>("activePage").Name=="HistoryPage",Field<FrameworkElement>("activePage").Name);
             check("native visual failure fixture preserves memory and primary bytes",engine.TodaySeconds(now)==3605&&File.ReadAllBytes(store.Path).SequenceEqual(before),null);
         }
-        File.WriteAllText(Path.Combine(output,"product-runtime.json"),JsonSerializer.Serialize(new{dll=typeof(IslandWindow).Assembly.Location,sha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),method="Same isolated WPF routed edit event and actual locked primary file; waited for layout and compositor before real screen capture. No external app input."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"product-runtime.json"),JsonSerializer.Serialize(new{dll=typeof(IslandWindow).Assembly.Location,sha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),method="Same isolated WPF routed edit event and actual locked primary file; waited for layout and compositor before real screen capture. No external app input."},AtomicStore.JsonOptions));
     }
 }

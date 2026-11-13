@@ -39,7 +39,7 @@ internal static partial class Program
             Attempt("automatic website removal",()=>Call("ToggleRecognizedWebsite",new BrowserPage("msedge.exe","Edge",0,"https://remove.example/",null)),()=>settings.Websites.All(r=>r.DisplayName!="remove"));
             Attempt("manual application add",()=>{Field<TextBox>("RuleInput").Text="manual-lock.exe";Call("AddRule",null,new RoutedEventArgs());},()=>settings.Rules.Any(r=>r.Identifier=="manual-lock.exe"));
             Attempt("manual website add",()=>{Field<TextBox>("WebsiteInput").Text="manual.example";Call("AddWebsite",null,new RoutedEventArgs());},()=>settings.Websites.Any(r=>r.DisplayName=="manual.example"));
-            Attempt("selected executable add",()=>{Field<ApplicationPickerFixture>("applicationPicker").NextSelection=Environment.ProcessPath;Field<Button>("AddApplicationSelectionButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));},()=>settings.Rules.Any(r=>r.Identifier==Path.GetFileName(Environment.ProcessPath)));
+            Attempt("selected executable add",()=>{Field<ApplicationPickerFixture>("applicationPicker").NextSelection=RuntimeCompat.ProcessPath;Field<Button>("AddApplicationSelectionButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));},()=>settings.Rules.Any(r=>r.Identifier==Path.GetFileName(RuntimeCompat.ProcessPath)));
             Grid Row(string rows,string name)=>Field<StackPanel>(rows).Children.OfType<Grid>().Single(row=>row.Children.OfType<CheckBox>().Any(c=>((TextBlock)c.Content).Text==name));
             void Disable(string rows,string name){var box=Row(rows,name).Children.OfType<CheckBox>().Single();box.IsChecked=false;box.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));}
             Attempt("application checkbox",()=>Disable("RuleRows","Added app"),()=>!settings.Rules.Single(r=>r.Identifier=="added-lock.exe").IsEnabled);
@@ -68,7 +68,7 @@ internal static partial class Program
         }
         Call("Persist");
         check("background recovery preserves newer unrelated feedback",message.Text==validationMessage&&store.Load().Settings.Rules.Any(r=>r.Identifier=="retry-before-validation.exe"),message.Text);
-        File.WriteAllText(Path.Combine(output,"recognition-save.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),observations,scope="Actual FileStream primary-file lock, production recognition mutation handlers and durable recovery. Synthetic application/browser identities and application-picker provider; no real browser, chooser input or user data."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"recognition-save.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),observations,scope="Actual FileStream primary-file lock, production recognition mutation handlers and durable recovery. Synthetic application/browser identities and application-picker provider; no real browser, chooser input or user data."},AtomicStore.JsonOptions));
     }
 }
 

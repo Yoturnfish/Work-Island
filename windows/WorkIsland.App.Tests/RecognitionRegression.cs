@@ -70,8 +70,8 @@ internal static partial class Program
             var beforeChoose=settings.Rules.Count;
             Field<Button>("AddApplicationSelectionButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             check("application plus opens selection and cancel preserves page",picker.Calls==1&&held&&settings.Rules.Count==beforeChoose&&Field<Grid>("RuleInputRow").Visibility==Visibility.Collapsed&&ReferenceEquals(Field<FrameworkElement>("activePage"),Field<StackPanel>("RecognitionPage")),null);
-            picker.NextSelection=Environment.ProcessPath;Field<Button>("AddApplicationSelectionButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            var selectedIdentifier=Path.GetFileName(Environment.ProcessPath)!;
+            picker.NextSelection=RuntimeCompat.ProcessPath;Field<Button>("AddApplicationSelectionButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var selectedIdentifier=Path.GetFileName(RuntimeCompat.ProcessPath)!;
             check("application plus adds chosen executable without typed process name",settings.Rules.Any(r=>r.Identifier==selectedIdentifier)&&Field<Grid>("RuleInputRow").Visibility==Visibility.Collapsed,null);
             settings.Rules.RemoveAll(r=>r.Identifier==selectedIdentifier);Call("RebuildRules");
             var candidate=new RunningApplication("fixture-running.exe","运行中的软件",0);

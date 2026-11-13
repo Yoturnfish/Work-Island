@@ -29,7 +29,11 @@ internal static partial class Program
         else{Call("EnableNativeForeground");Call("EnableNativePulses");}
         await Task.Delay(180);
         check("ordinary presentation has one live foreground instead of a whole-window snapshot controller",!Field<bool>("nativeForegroundEnabled")&&Field<int>("nativeForegroundCaptures")==0, null);
-        var guard=new Window{Title="Work Island · 页面帧采样背景",Left=320,Top=240,Width=500,Height=220,Topmost=true,Background=System.Windows.Media.Brushes.White};guard.Show();window.Topmost=true;window.Activate();window.Closed+=(_,_)=>guard.Close();await Task.Delay(80);
+        var guard=new Window{Title="Work Island · 页面帧采样背景",Left=320,Top=240,Width=500,Height=220,Topmost=true,Background=System.Windows.Media.Brushes.White};guard.Show();window.Topmost=true;window.Activate();window.Closed+=(_,_)=>guard.Close();
+        // Establish the newly created guard's z-order before measuring a page
+        // transition. Otherwise initial white guard frames can precede the
+        // action itself and be mistaken for a transition flash.
+        await Dispatcher.Yield(DispatcherPriority.ContextIdle);await Task.Delay(300);
         var border=Field<Border>("OuterBorder");var visibleRootWrites=0;
         var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.OpacityProperty,typeof(Border));
         EventHandler rootChanged=(_,_)=>{if(Field<bool>("nativeForegroundActive")&&border.Opacity>0)visibleRootWrites++;};descriptor.AddValueChanged(border,rootChanged);
@@ -47,10 +51,14 @@ internal static partial class Program
                     graphics.CopyFromScreen((int)Math.Round(origin.X),(int)Math.Round(origin.Y),0,0,image.Size);
                     var luma=0d;for(var x=width/2-4;x<=width/2+4;x+=2){var c=image.GetPixel(x,Math.Max(1,(int)(height*.10)));luma+=(c.R+c.G+c.B)/3d;}
                     var count=0;var sum=0d;for(var y=height/5;y<height*4/5;y+=2)for(var x=0;x<width;x+=2){var c=image.GetPixel(x,y);if(c.G>c.R+60&&c.G>c.B+30){count++;sum+=x;}}
-                    frames.Add(((Drawing.Bitmap)image.Clone(),frameWatch.Elapsed.TotalMilliseconds,luma/5,count==0?0:sum/count,count));Thread.Sleep(4);
+                    lock(frames)frames.Add(((Drawing.Bitmap)image.Clone(),frameWatch.Elapsed.TotalMilliseconds,luma/5,count==0?0:sum/count,count));Thread.Sleep(4);
                 }
             });
-            await Task.Delay(40);
+            await Task.Delay(60);
+            var actionAtMs=frameWatch.Elapsed.TotalMilliseconds;
+            (double Luma,int Green)[] baseline;
+            lock(frames)baseline=frames.Select(f=>(f.Luma,f.Green)).ToArray();
+            check((page??(expand?"opening":"returning"))+" sampling starts with the island visible before the action",baseline.Length>=2&&baseline.TakeLast(2).All(f=>f.Green>0||f.Luma<240),new{actionAtMs,baseline=baseline.Select(f=>f.Luma).ToArray()});
             var before=Field<int>("nativeForegroundCaptures");var beforeCpu=Process.GetCurrentProcess().TotalProcessorTime.TotalSeconds;
             var watch=Stopwatch.StartNew();
             if(page=="settings")Call("OpenSettings",window,new RoutedEventArgs());
@@ -90,12 +98,12 @@ internal static partial class Program
         File.WriteAllText(Path.Combine(output,"navigation-performance.json"),JsonSerializer.Serialize(rows,AtomicStore.JsonOptions));
         if(live)
         {
-            window.Title="Work Island · 页面流畅度验收 · "+Environment.ProcessId;window.ShowInTaskbar=true;guard.Title="Work Island · 外部点击验收 · "+Environment.ProcessId;
+            window.Title="Work Island · 页面流畅度验收 · "+RuntimeCompat.ProcessId;window.ShowInTaskbar=true;guard.Title="Work Island · 外部点击验收 · "+RuntimeCompat.ProcessId;
             guard.Topmost=false;
             void Record(string action)=>File.AppendAllText(Path.Combine(output,"actual-input.jsonl"),JsonSerializer.Serialize(new{action,at=DateTimeOffset.Now,native=Field<bool>("nativeForegroundActive"),captures=Field<int>("nativeForegroundCaptures"),opacity=Opacity(),expanded=Field<bool>("isExpanded")})+Environment.NewLine);
             window.Activated+=(_,_)=>Record("activated");window.Deactivated+=(_,_)=>Record("deactivated");
             window.PreviewMouseUp+=(_,_)=>window.Dispatcher.BeginInvoke(()=>Record("mouse-up"),DispatcherPriority.Background);
-            File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=Environment.ProcessId,title=window.Title,guard=guard.Title}));
+            File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=RuntimeCompat.ProcessId,title=window.Title,guard=guard.Title}));
             var wait=Stopwatch.StartNew();while(wait.Elapsed.TotalSeconds<180&&!File.Exists(Path.Combine(output,"finish-review.txt")))await Task.Delay(200);
         }
     }

@@ -58,6 +58,6 @@ internal static partial class Program
         Select("menuBar");Call("OpenMenuPanel");Call("OpenSettings",window,new RoutedEventArgs());
         Select("floating");await Task.Delay(100);
         check("second successful retry durably restores visible floating mode",settings.DisplayMode=="floating"&&window.IsVisible&&!Installed()&&store.Load().Settings.DisplayMode=="floating",null);
-        File.WriteAllText(Path.Combine(output,"mode-save.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),failedFloating,failedMenu,scope="Actual primary-file lock, ComboBox selection changes, native Shell icon registration and production mode-switch handlers. Menu panel opening is a controlled internal precondition, not a click on Explorer's icon; no user data."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"mode-save.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),failedFloating,failedMenu,scope="Actual primary-file lock, ComboBox selection changes, native Shell icon registration and production mode-switch handlers. Menu panel opening is a controlled internal precondition, not a click on Explorer's icon; no user data."},AtomicStore.JsonOptions));
     }
 }

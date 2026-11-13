@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Globalization;
 using System.Numerics;
 using System.Windows;
@@ -29,7 +30,7 @@ public sealed class HistoryStatisticsStrip : FrameworkElement, IScrollInfo
 
     public HistoryStatisticsStrip(IReadOnlyDictionary<DateOnly,double> totals,DateOnly latest,double goal,Color accent,FontFamily font)
     {
-        this.totals=new(totals);this.goal=goal;LastDay=latest;
+        this.totals=totals.ToDictionary(item=>item.Key,item=>item.Value);this.goal=goal;LastDay=latest;
         var first=totals.Keys.Where(date=>date<=latest).Order().Take(1).ToArray();
         if(first.Length>0){FirstDay=first[0];DayCount=latest.DayNumber-first[0].DayNumber+1;}
         active=new(accent){Opacity=184/255d};active.Freeze();inactive=new(accent){Opacity=26/255d};inactive.Freeze();
@@ -39,7 +40,7 @@ public sealed class HistoryStatisticsStrip : FrameworkElement, IScrollInfo
     public double SecondsOn(DateOnly date)=>totals.TryGetValue(date,out var seconds)?seconds:0;
     public void UpdateCurrentDay(DateOnly latest,double seconds,bool hasRecords)
     {
-        if(!double.IsFinite(seconds)||seconds<0)throw new ArgumentOutOfRangeException(nameof(seconds));
+        if(!RuntimeCompat.IsFinite(seconds)||seconds<0)throw new ArgumentOutOfRangeException(nameof(seconds));
         var changed=LastDay!=latest||hasRecords&&(!totals.TryGetValue(latest,out var old)||old!=seconds)||!hasRecords&&totals.ContainsKey(latest);
         if(!changed)return;
         var atLatest=Math.Abs(HorizontalOffset-Math.Max(0,ExtentWidth-ViewportWidth))<.1;
@@ -60,7 +61,7 @@ public sealed class HistoryStatisticsStrip : FrameworkElement, IScrollInfo
         InvalidateVisual();
     }
     protected override AutomationPeer OnCreateAutomationPeer()=>new FrameworkElementAutomationPeer(this);
-    protected override Size MeasureOverride(Size available)=>new(double.IsFinite(available.Width)?available.Width:200,56);
+    protected override Size MeasureOverride(Size available)=>new(RuntimeCompat.IsFinite(available.Width)?available.Width:200,56);
     protected override Size ArrangeOverride(Size final)
     {
         ViewportWidth=final.Width;ViewportHeight=final.Height;
@@ -71,13 +72,13 @@ public sealed class HistoryStatisticsStrip : FrameworkElement, IScrollInfo
     {
         context.DrawRectangle(Brushes.Transparent,null,new Rect(RenderSize));
         RenderedDayCount=0;if(FirstDay is not {} first || DayCount==0)return;
-        var begin=Math.Clamp((int)Math.Floor(HorizontalOffset/Pitch),0,DayCount-1);
-        var end=Math.Clamp((int)Math.Ceiling((HorizontalOffset+ActualWidth)/Pitch),0,DayCount-1);
+        var begin=RuntimeCompat.Clamp((int)Math.Floor(HorizontalOffset/Pitch),0,DayCount-1);
+        var end=RuntimeCompat.Clamp((int)Math.Ceiling((HorizontalOffset+ActualWidth)/Pitch),0,DayCount-1);
         var matrixY=Math.Max(0,ActualHeight-45.5);
         for(var index=begin;index<=end;index++)
         {
-            var date=first.AddDays(index);var progress=Math.Clamp(SecondsOn(date)/goal,0,1);
-            var lit=progress<=0?0:progress>=1?16:Math.Clamp((int)(progress*16),1,15);
+            var date=first.AddDays(index);var progress=RuntimeCompat.Clamp(SecondsOn(date)/goal,0,1);
+            var lit=progress<=0?0:progress>=1?16:RuntimeCompat.Clamp((int)(progress*16),1,15);
             var x=index*Pitch-HorizontalOffset;
             for(var row=0;row<8;row++)for(var col=0;col<2;col++)
                 context.DrawRoundedRectangle(row*2+col<lit?active:inactive,null,new Rect(x+col*6.75,matrixY+(7-row)*4.5,5.25,3),1.5,1.5);
@@ -99,7 +100,7 @@ public sealed class HistoryStatisticsStrip : FrameworkElement, IScrollInfo
         // Valid manual totals can exceed TimeSpan's tick-based range. Format
         // their represented whole seconds without narrowing or changing data.
         var whole=new BigInteger(seconds);
-        return string.Create(CultureInfo.InvariantCulture,$"{whole/3600}:{(int)(whole/60%60):00}:{(int)(whole%60):00}");
+        return FormattableString.Invariant($"{whole/3600}:{(int)(whole/60%60):00}:{(int)(whole%60):00}");
     }
     protected override void OnMouseMove(MouseEventArgs args)
     {
@@ -131,7 +132,7 @@ public sealed class HistoryStatisticsStrip : FrameworkElement, IScrollInfo
     public void SetHorizontalOffset(double offset)
     {
         if(double.IsNaN(offset))return;
-        var value=Math.Clamp(offset,0,Math.Max(0,ExtentWidth-ViewportWidth));
+        var value=RuntimeCompat.Clamp(offset,0,Math.Max(0,ExtentWidth-ViewportWidth));
         if(value==HorizontalOffset)return;HorizontalOffset=value;InvalidateVisual();ScrollOwner?.InvalidateScrollInfo();
     }
     public void SetVerticalOffset(double offset) { }

@@ -36,12 +36,12 @@ public static class WindowsRecognition
         {
             if(!IsWindowVisible(hwnd) || (GetWindowLong(hwnd,-20)&0x80)!=0 || Title(hwnd).Length==0)return true;
             WindowsActivity.GetWindowThreadProcessId(hwnd,out var pid);
-            if(pid==Environment.ProcessId)return true;
+            if(pid==RuntimeCompat.ProcessId)return true;
             var app=WindowsActivity.Application(hwnd);
             if(app.Identifier is null || app.Identifier.Equals("WorkIsland.exe",StringComparison.OrdinalIgnoreCase)
                 || app.Identifier.Equals("ApplicationFrameHost.exe",StringComparison.OrdinalIgnoreCase))return true;
             var name=app.Name!;
-            try{using var process=Process.GetProcessById((int)pid);var description=process.MainModule?.FileVersionInfo.FileDescription;if(!string.IsNullOrWhiteSpace(description))name=description;}
+            try{using var process=Process.GetProcessById((int)pid);var description=process.MainModule?.FileVersionInfo.FileDescription;if(!string.IsNullOrWhiteSpace(description))name=description!;}
             catch(Exception error)when(error is ArgumentException or IOException or InvalidOperationException or System.ComponentModel.Win32Exception){ }
             apps.Add(new(app.Identifier,name,hwnd));return true;
         },0);
@@ -111,7 +111,7 @@ internal sealed class BrowserSampler
         {requested=window;requestedIdentifier=identifier;cached=null;completed=0;generation++;}
         if(pending?.IsCompleted==true)
         {
-            if(pending.IsCompletedSuccessfully && pending.Result.Window==window
+            if(pending.Status==TaskStatus.RanToCompletion && pending.Result.Window==window
                 && pending.Result.BrowserIdentifier.Equals(identifier,StringComparison.OrdinalIgnoreCase) && generation==pendingGeneration
                 && (Stopwatch.GetTimestamp()-requestedAt)/(double)Stopwatch.Frequency<=1.5){cached=pending.Result;completed=requestedAt;}
             else cached=null;

@@ -100,7 +100,7 @@ public partial class IslandWindow
             await Task.Delay(600);
             SaveScreenRegion(Path.Combine(output, "07-glass-screen.png"), 23);
             Check("native host backdrop is enabled on this Windows host", surfaces?.NativeBackdropAvailable == true && surfaces.BackdropVisible,
-                new { result = surfaces?.BackdropResult, handle = surfaces?.BackdropHandle.ToInt64(), os = Environment.OSVersion.VersionString });
+                new { result = surfaces?.BackdropResult, handle = surfaces is null ? (long?)null : (long)surfaces.BackdropHandle, os = Environment.OSVersion.VersionString });
             Check("transparent style removes external shadow", surfaces?.ShadowVisible == false);
             // High-frequency stripes are beneath the top interior, away from text and orb.
             surfaces?.SetBackdropBlend(1); await Task.Delay(250);

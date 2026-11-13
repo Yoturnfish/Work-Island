@@ -92,9 +92,9 @@ internal static partial class Program
                 }
                 else window.Opacity=.5;
             };
-            using var own=Process.GetCurrentProcess();own.Refresh();var cpu=own.TotalProcessorTime.TotalSeconds;var allocation=GC.GetTotalAllocatedBytes(false);var watch=Stopwatch.StartNew();tickTimer.Start();
+            using var own=Process.GetCurrentProcess();own.Refresh();var cpu=own.TotalProcessorTime.TotalSeconds;var allocation=TestRuntime.GetTotalAllocatedBytes(false);var watch=Stopwatch.StartNew();tickTimer.Start();
             try{await Task.Delay(4100);}finally{tickTimer.Stop();}own.Refresh();
-            cpuRows.Add(new{state,style,renderer,round,elapsedSeconds=watch.Elapsed.TotalSeconds,oneCorePercent=100*(own.TotalProcessorTime.TotalSeconds-cpu)/watch.Elapsed.TotalSeconds,allocatedBytes=GC.GetTotalAllocatedBytes(false)-allocation,mainQueries=queries,ticks,uploads,window.IsActive,window.IsVisible,scope="Actual WindowsActivity/AtomicStore Tick at 1Hz. Owned manual WPF reference timelines versus native planes, same half-progress display and white background, no screenshots during timing. Foreground uploads only if title/time stamp changes. Prototype settings.ReduceMotion=true suppresses product WPF loops; the WPF reference explicitly attaches equivalent timelines."});
+            cpuRows.Add(new{state,style,renderer,round,elapsedSeconds=watch.Elapsed.TotalSeconds,oneCorePercent=100*(own.TotalProcessorTime.TotalSeconds-cpu)/watch.Elapsed.TotalSeconds,allocatedBytes=TestRuntime.GetTotalAllocatedBytes(false)-allocation,mainQueries=queries,ticks,uploads,window.IsActive,window.IsVisible,scope="Actual WindowsActivity/AtomicStore Tick at 1Hz. Owned manual WPF reference timelines versus native planes, same half-progress display and white background, no screenshots during timing. Foreground uploads only if title/time stamp changes. Prototype settings.ReduceMotion=true suppresses product WPF loops; the WPF reference explicitly attaches equivalent timelines."});
         }
         try
         {
@@ -163,7 +163,7 @@ internal static partial class Program
         finally
         {
             Native("SetOpacity",0d);foreach(var plane in surfaces)plane.Dispose();Stencil(false);source.RemoveHook(Hook);typeof(IslandWindow).GetField("fidelityBackground",Flags)!.SetValue(window,null);background.Close();border.Opacity=1;window.Opacity=1;scale.ScaleX=scale.ScaleY=1;glyph.Opacity=1;
-            File.WriteAllText(Path.Combine(output,"native-pulse-probe.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),dpi,pixelsOnly,glyphResolutionScale=4,roundedEdgeCoverage="WPF capture owns edge alpha; native guard clip outside those pixels",rows,cpuRows,motionRows,scope="Actual isolated same-HWND three-plane prototype, owned white background, real desktop screen pixels. Scalar keyframes approximate existing WPF SineEase. No production source/startup changed. Fixed-phase pixel gates remain binding. CPU includes 1Hz actual business Tick but uses explicit equivalent WPF timelines; no real input, renderer handoff, glass, hardware/game or full delivery acceptance."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"native-pulse-probe.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),dpi,pixelsOnly,glyphResolutionScale=4,roundedEdgeCoverage="WPF capture owns edge alpha; native guard clip outside those pixels",rows,cpuRows,motionRows,scope="Actual isolated same-HWND three-plane prototype, owned white background, real desktop screen pixels. Scalar keyframes approximate existing WPF SineEase. No production source/startup changed. Fixed-phase pixel gates remain binding. CPU includes 1Hz actual business Tick but uses explicit equivalent WPF timelines; no real input, renderer handoff, glass, hardware/game or full delivery acceptance."},AtomicStore.JsonOptions));
         }
     }
 }
@@ -187,8 +187,8 @@ internal sealed class PulsePlane:IDisposable
     }
     internal bool Released=>disposed&&(int)type.GetProperty("OwnedReferences",Flags)!.GetValue(surface)! == 0;
     public void Dispose(){if(disposed)return;disposed=true;if(composition!=0){Marshal.Release(composition);composition=0;}((IDisposable)surface).Dispose();}
-    internal static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*nint.Size));
-    internal static nint Query(nint pointer,string text){var id=new Guid(text);Hr(Marshal.QueryInterface(pointer,in id,out var result));return result;}
+    internal static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*IntPtr.Size));
+    internal static nint Query(nint pointer,string text){var id=new Guid(text);Hr(RuntimeCompat.QueryInterface(pointer,id,out var result));return result;}
     internal static void Hr(int hr)=>Marshal.ThrowExceptionForHR(hr);
     [StructLayout(LayoutKind.Sequential)]internal readonly record struct Vector3(float X,float Y,float Z);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]internal delegate int PutObject(nint self,nint value);
@@ -217,7 +217,7 @@ internal sealed class PulseAnimation:IDisposable
         }
         catch{Dispose();throw;}
     }
-    internal void Seek(double phase,bool resume=false){ObjectDisposedException.ThrowIf(disposed,this);PulsePlane.Hr(PulsePlane.Fn<Clear>(controller,12)(controller));PulsePlane.Hr(PulsePlane.Fn<PulsePlane.PutFloat>(controller,9)(controller,(float)phase));if(resume)PulsePlane.Hr(PulsePlane.Fn<Clear>(controller,13)(controller));}
+    internal void Seek(double phase,bool resume=false){RuntimeCompat.ThrowIfDisposed(disposed,this);PulsePlane.Hr(PulsePlane.Fn<Clear>(controller,12)(controller));PulsePlane.Hr(PulsePlane.Fn<PulsePlane.PutFloat>(controller,9)(controller,(float)phase));if(resume)PulsePlane.Hr(PulsePlane.Fn<Clear>(controller,13)(controller));}
     public void Dispose()
     {
         if(disposed)return;disposed=true;

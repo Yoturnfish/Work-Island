@@ -39,7 +39,7 @@ internal static partial class Program
         };
         picker.SelectionChanged+=changed;
         var source=(HwndSource)PresentationSource.FromVisual(window);
-        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Own isolated paused settings window. Official mouse opens Reminder dropdown; keyboard Down/Return selects Flash, then Up/Return selects Off after full preview. Fixture only observes selection and glow properties after preparation."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Own isolated paused settings window. Official mouse opens Reminder dropdown; keyboard Down/Return selects Flash, then Up/Return selects Off after full preview. Fixture only observes selection and glow properties after preparation."},AtomicStore.JsonOptions));
         try
         {
             while(watch.Elapsed.TotalSeconds<300&&!File.Exists(Path.Combine(output,"stop-review.txt")))
@@ -64,7 +64,7 @@ internal static partial class Program
             check("real selection preview ends and releases its clock",curve.Any(p=>p.seconds>1.65&&p.opacity==0&&!p.clock),null);
             check("Off leaves settings page and stopped glow intact",ReferenceEquals(Field<FrameworkElement?>("activePage"),Field<FrameworkElement>("SettingsPage"))&&Field<AnimationClock?>("reminderClock")==null&&!glow.HasAnimatedProperties&&glow.Opacity==0,null);
             check("actual selection captures expanding-glow intermediate frames",capturedFrames.Count==8,capturedFrames);
-            File.WriteAllText(Path.Combine(output,"reminder-live.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),changes,curve=curve.Select(p=>new{p.seconds,p.opacity,p.clock}),scope="Official Computer Use mouse opens own WPF dropdown and keyboard selects its options. Read-only selection/opacity/clock observers, isolated paused data. No generated input or direct selection/handler calls after preparation. Not physical hardware, game, or full away-threshold wall-clock acceptance."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"reminder-live.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),changes,curve=curve.Select(p=>new{p.seconds,p.opacity,p.clock}),scope="Official Computer Use mouse opens own WPF dropdown and keyboard selects its options. Read-only selection/opacity/clock observers, isolated paused data. No generated input or direct selection/handler calls after preparation. Not physical hardware, game, or full away-threshold wall-clock acceptance."},AtomicStore.JsonOptions));
         }
         finally{picker.SelectionChanged-=changed;}
     }

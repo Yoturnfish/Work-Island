@@ -39,7 +39,7 @@ internal static partial class Program
         try
         {
             Call("SaveScreenRegion",Path.Combine(output,"before-drag-screen.png"),23);
-            File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=(long)new WindowInteropHelper(window).Handle,window.Title,originalX,originalY,originalCaptures,scope="Independent actual WPF window, current App/Core and isolated state. Waiting only for official drag. No programmatic position changes or mouse handlers after ready; observer writes read-only snapshots."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=(long)new WindowInteropHelper(window).Handle,window.Title,originalX,originalY,originalCaptures,scope="Independent actual WPF window, current App/Core and isolated state. Waiting only for official drag. No programmatic position changes or mouse handlers after ready; observer writes read-only snapshots."},AtomicStore.JsonOptions));
             while(!File.Exists(Path.Combine(output,"finish-drag.txt"))&&watch.Elapsed.TotalSeconds<600)
             {File.WriteAllText(Path.Combine(output,"drag-progress.json"),JsonSerializer.Serialize(new{downs,locations=locations.ToArray(),current=Snapshot()},AtomicStore.JsonOptions));await Task.Delay(100);}
             var last=store.Load();var movedFar=Math.Abs(window.Left-originalX)>5||Math.Abs(window.Top-originalY)>5;
@@ -59,7 +59,7 @@ internal static partial class Program
             restored.Loaded+=(_,_)=>((DispatcherTimer)typeof(IslandWindow).GetField("timer",Flags)!.GetValue(restored)!).Stop();restored.Show();await Task.Delay(150);
             ((DispatcherTimer)typeof(IslandWindow).GetField("fullscreenTimer",Flags)!.GetValue(restored)!).Stop();restored.EnableNativeForeground();restored.EnableNativePulses();await Task.Delay(500);
             check("new product window loads saved dragged coordinates without test repositioning",Math.Abs(restored.Left-last.Settings.WindowX!.Value)<.01&&Math.Abs(restored.Top-last.Settings.WindowY!.Value)<.01,new{restored.Left,restored.Top,last.Settings.WindowX,last.Settings.WindowY});
-            File.WriteAllText(Path.Combine(output,"restore-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=(long)new WindowInteropHelper(restored).Handle,restored.Title,restored.Left,restored.Top,scope="New IslandWindow constructor restored prior saved coordinates in same test process. Original hidden/exiting, no programmatic restored Left/Top writes. Not a process restart or session test; await official observation only."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"restore-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=(long)new WindowInteropHelper(restored).Handle,restored.Title,restored.Left,restored.Top,scope="New IslandWindow constructor restored prior saved coordinates in same test process. Original hidden/exiting, no programmatic restored Left/Top writes. Not a process restart or session test; await official observation only."},AtomicStore.JsonOptions));
             var restoreWatch=Stopwatch.StartNew();while(!File.Exists(Path.Combine(output,"finish-restore.txt"))&&restoreWatch.Elapsed.TotalSeconds<600)await Task.Delay(100);
             check("official tool observes restored window before completion",File.Exists(Path.Combine(output,"finish-restore.txt")),null);
         }

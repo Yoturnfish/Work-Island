@@ -27,7 +27,7 @@ try {
     foreach ($project in @('WorkIsland.App\WorkIsland.App.csproj', 'WorkIsland.Tests\WorkIsland.Tests.csproj', 'WorkIsland.App.Tests\WorkIsland.App.Tests.csproj')) {
         & $dotnet restore $project --configfile (Join-Path $PSScriptRoot 'NuGet.Config') --verbosity minimal
         if ($LASTEXITCODE) { throw "还原失败: $project" }
-        & $dotnet build $project -c Release --no-restore --nologo
+        & $dotnet build $project -c Release -f $(if($project -like 'WorkIsland.Tests*'){'net10.0'}else{'net10.0-windows'}) --no-restore --nologo
         if ($LASTEXITCODE) { throw "构建失败: $project" }
     }
     if (-not $SkipTests) {
@@ -38,7 +38,7 @@ try {
             if ($LASTEXITCODE) { throw '通知/图标周期回归失败' }
         } else { Write-Host '窗口回归未运行（-SkipWindowTests）；不能作为发布验收通过。' }
     }
-    & $dotnet publish 'WorkIsland.App\WorkIsland.App.csproj' -c Release --no-restore --self-contained false -o $artifact --nologo
+    & $dotnet publish 'WorkIsland.App\WorkIsland.App.csproj' -c Release -f net10.0-windows --no-restore --self-contained false -o $artifact --nologo
     if ($LASTEXITCODE) { throw '打包失败' }
     $runtime = Join-Path $artifact 'runtime'
     New-Item -ItemType Directory -Path (Join-Path $runtime 'shared') -Force | Out-Null

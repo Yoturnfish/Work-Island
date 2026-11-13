@@ -117,7 +117,7 @@ internal static partial class Program
         finally
         {
             syncing.SetValue(progress,false);enabled.SetValue(window,true);Call("SuspendNativeForeground");typeof(IslandWindow).GetField("fidelityBackground",Flags)!.SetValue(window,null);background.Close();
-            File.WriteAllText(Path.Combine(output,"native-raster-review.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),dpi,backendOnly,rows,scope="Diagnostic measurements, not product pixel parity acceptance: isolated tracking HWND/data, synthetic observation, actual screen captures, owned white backdrop, fixed scan phase. Unchanged production DLL. Sampling submissions and software-only HWND reference are explicit test-only overrides. The original default-hardware WPF edge quality gate is not replaced or declared passed; no real input/browser/game/hardware or deployment claim."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"native-raster-review.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),dpi,backendOnly,rows,scope="Diagnostic measurements, not product pixel parity acceptance: isolated tracking HWND/data, synthetic observation, actual screen captures, owned white backdrop, fixed scan phase. Unchanged production DLL. Sampling submissions and software-only HWND reference are explicit test-only overrides. The original default-hardware WPF edge quality gate is not replaced or declared passed; no real input/browser/game/hardware or deployment claim."},AtomicStore.JsonOptions));
         }
     }
 }

@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Drawing;
 using System.Diagnostics;
 using System.Windows;
@@ -49,7 +50,7 @@ public partial class IslandWindow
         if(!IsMenuBar){if(!nativeStateTransitionActive)statusAnimationTimer.Stop();return;}
         var now=DateTimeOffset.Now;var monotonic=Stopwatch.GetTimestamp()/(double)Stopwatch.Frequency;
         var snapshot=DisplayedTime(now);statusDisplaySeconds=snapshot.Seconds;statusDurationStyle=snapshot.Style;
-        statusIconSize=(int)Math.Clamp(Math.Round(SystemParameters.SmallIconWidth*System.Windows.Media.VisualTreeHelper.GetDpi(this).DpiScaleX),16,64);
+        statusIconSize=(int)RuntimeCompat.Clamp(Math.Round(SystemParameters.SmallIconWidth*System.Windows.Media.VisualTreeHelper.GetDpi(this).DpiScaleX),16,64);
         statusWorkSeconds=engine.TodaySeconds(now);statusProgress=engine.Progress(now);statusSnapshotAt=monotonic;
         statusAwayClock=engine.Data.Settings.AwayTimerEnabled&&engine.Current.State=="away";
         statusGoal=(engine.Data.Settings.GoalSeconds/3600).ToString("0.#");
@@ -76,7 +77,7 @@ public partial class IslandWindow
             statusTimeKey=key;
             var rasterStarted=Stopwatch.GetTimestamp();
             using var bitmap=statusArtwork.Render(engine.Current.State,engine.Data.Settings.Accent,statusProgress,statusIconSize,color,engine.Data.Settings.BackgroundStyle=="glass",phase,blend,coffeePulse);
-            statusRasterSeconds+=Stopwatch.GetElapsedTime(rasterStarted).TotalSeconds;
+            statusRasterSeconds+=RuntimeCompat.GetElapsedTime(rasterStarted).TotalSeconds;
             statusItem.Update(bitmap,tooltip);
         }
         else statusItem.UpdateTooltip(tooltip);
@@ -170,10 +171,10 @@ public partial class IslandWindow
 
     public static Rectangle MenuPanelFrame(System.Drawing.Size size,Rectangle anchor,Rectangle work)
     {
-        var x=Math.Clamp(anchor.Left+(anchor.Width-size.Width)/2,work.Left,Math.Max(work.Left,work.Right-size.Width));
+        var x=RuntimeCompat.Clamp(anchor.Left+(anchor.Width-size.Width)/2,work.Left,Math.Max(work.Left,work.Right-size.Width));
         var y=anchor.Top-size.Height-8;
         if(y<work.Top)y=anchor.Bottom+8;
-        y=Math.Clamp(y,work.Top,Math.Max(work.Top,work.Bottom-size.Height));
+        y=RuntimeCompat.Clamp(y,work.Top,Math.Max(work.Top,work.Bottom-size.Height));
         return new(x,y,size.Width,size.Height);
     }
     private void PositionMenuPanel()

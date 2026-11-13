@@ -26,7 +26,7 @@ internal static partial class Program
         typeof(IslandWindow).GetMethod("Render",Flags|BindingFlags.DeclaredOnly)!.Invoke(window,null);await Task.Delay(450);
         var scan=(TranslateTransform)typeof(PixelProgress).GetField("scan",Flags)!.GetValue(progress)!;
         var band=(System.Windows.Shapes.Rectangle)typeof(PixelProgress).GetField("filledBand",Flags)!.GetValue(progress)!;
-        double WpfPhase()=>Math.Clamp((scan.X+band.Width)/(progress.ActualWidth+band.Width),0,1)%1;
+        double WpfPhase()=>RuntimeCompat.Clamp((scan.X+band.Width)/(progress.ActualWidth+band.Width),0,1)%1;
         var beforeAttach=WpfPhase();
         typeof(PixelProgress).GetMethod("EnableNativeScan",Flags)!.Invoke(progress,[window,Field<FrameworkElement>("PageHost")]);
         progress.Update(.5,"tracking","matrix",brush,false,30);
@@ -96,6 +96,6 @@ internal static partial class Program
             File.WriteAllText(Path.Combine(motion,"motion-capture.json"),JsonSerializer.Serialize(new{durationSeconds=clock.Elapsed.TotalSeconds,frameCount=samples.Count,frames=samples,events,scope="Original timestamps, actual own-window screen pixels. Twenty renderer handoffs including 80ms reversals, white owned background and full opacity. Property estimates are diagnostics, not pixel measurements. Not navigation or grouped-alpha acceptance."},AtomicStore.JsonOptions));
         }
         finally{backgroundField.SetValue(window,null);background.Close();progress.Update(.5,"tracking","matrix",brush,true,30);}
-        File.WriteAllText(Path.Combine(output,"phase-handoff.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),observations,switches,scope="Real WinRT controller frozen value, monotonic native phase estimate, actual WPF animated property and isolated PixelProgress. Screen capture separately records actual compositor result. Not ordinary preview or actual mouse acceptance."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"phase-handoff.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),observations,switches,scope="Real WinRT controller frozen value, monotonic native phase estimate, actual WPF animated property and isolated PixelProgress. Screen capture separately records actual compositor result. Not ordinary preview or actual mouse acceptance."},AtomicStore.JsonOptions));
     }
 }

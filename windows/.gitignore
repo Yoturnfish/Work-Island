@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/.cache/
+**/artifacts/
+**/test-results/
+**/backups/
+**/Data/
+**/PreviewData/
+**/state.json*
+**/errors.log
+.vs/
+.DS_Store
+*.user
+*.suo

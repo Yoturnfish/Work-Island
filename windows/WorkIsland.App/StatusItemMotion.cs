@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Drawing;
 
 namespace WorkIsland.App;
@@ -23,12 +24,12 @@ public sealed class StatusItemMotion
     public double CoffeePulse(double now)
     {
         if(Mode!="pulse")return 0;
-        var elapsed=Math.Max(0,now-pulseOrigin);var fade=Math.Clamp(elapsed/.8,0,1);
+        var elapsed=Math.Max(0,now-pulseOrigin);var fade=RuntimeCompat.Clamp(elapsed/.8,0,1);
         return (1-Math.Cos(elapsed/(2*CycleSeconds)*2*Math.PI))/2*fade*fade*(3-2*fade);
     }
     public StatusGlyphBlend GlyphAt(double now)
     {
-        var t=Math.Clamp((now-glyphChangedAt)/TransitionSeconds,0,1);
+        var t=RuntimeCompat.Clamp((now-glyphChangedAt)/TransitionSeconds,0,1);
         var ease=t<.5?4*t*t*t:1-Math.Pow(-2*t+2,3)/2;
         return new(glyphFrom.Clock+(glyphTarget.Clock-glyphFrom.Clock)*ease,
             glyphFrom.Coffee+(glyphTarget.Coffee-glyphFrom.Coffee)*ease,
@@ -36,9 +37,9 @@ public sealed class StatusItemMotion
     }
     public Color ColorAt(double now)
     {
-        var t=Math.Clamp((now-changedAt)/TransitionSeconds,0,1);
+        var t=RuntimeCompat.Clamp((now-changedAt)/TransitionSeconds,0,1);
         var ease=t<.5?4*t*t*t:1-Math.Pow(-2*t+2,3)/2;
-        byte Mix(byte a,byte b)=>(byte)Math.Clamp(Math.Round(a+(b-a)*ease),0,255);
+        byte Mix(byte a,byte b)=>(byte)RuntimeCompat.Clamp(Math.Round(a+(b-a)*ease),0,255);
         return Color.FromArgb(Mix(from.A,target.A),Mix(from.R,target.R),Mix(from.G,target.G),Mix(from.B,target.B));
     }
     public void Retarget(Color color,string state,double progress,bool reduced,double now,double? awayElapsed)
@@ -58,7 +59,7 @@ public sealed class StatusItemMotion
         var filled=column<lit;var opacity=filled?.72:.10;
         if(Mode=="pulse"&&!filled)
         {
-            var elapsed=Math.Max(0,now-pulseOrigin);var fade=Math.Clamp(elapsed/.8,0,1);
+            var elapsed=Math.Max(0,now-pulseOrigin);var fade=RuntimeCompat.Clamp(elapsed/.8,0,1);
             var envelope=fade*fade*(3-2*fade);
             opacity+=(1-Math.Cos(elapsed/CycleSeconds*2*Math.PI))/2*envelope*.25;
         }
@@ -68,6 +69,6 @@ public sealed class StatusItemMotion
             var center=-7+phase*42; // Mac: max(14, width * .26), width=28.
             opacity+=Math.Max(0,1-Math.Abs((column*2.8+.9-center)/7))*.30;
         }
-        return Math.Clamp(opacity,0,1);
+        return RuntimeCompat.Clamp(opacity,0,1);
     }
 }

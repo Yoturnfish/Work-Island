@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -22,11 +23,11 @@ public sealed class StatusGlyphArtwork:IDisposable
     private bool disposed;
 
     public static int ProgressKey(double progress)=>(int)Math.Round(Normalize(progress)*1000);
-    private static double Normalize(double value)=>double.IsNaN(value)?0:Math.Clamp(value,0,1);
+    private static double Normalize(double value)=>double.IsNaN(value)?0:RuntimeCompat.Clamp(value,0,1);
     public Bitmap Render(string state,string accent,double progress,int size,Color? presentationColor=null,bool transparent=false,
         double scanPhase=0,StatusGlyphBlend? blend=null,double coffeePulse=0)
     {
-        ObjectDisposedException.ThrowIf(disposed,this);
+        RuntimeCompat.ThrowIfDisposed(disposed,this);
         if(size<8||size>256)throw new ArgumentOutOfRangeException(nameof(size));
         var color=presentationColor??(state=="away"?Color.FromArgb(255,149,0):state=="paused"?Color.FromArgb(173,173,173):TrayArtwork.Accent(accent));
         if(palette!=color)
@@ -50,7 +51,7 @@ public sealed class StatusGlyphArtwork:IDisposable
             layer?.Dispose();layer=new Bitmap(size,size,PixelFormat.Format32bppPArgb);
             layerPixels=new int[size*size];blendChannels=new int[size*size*4];
         }
-        var pixels=layerPixels!;var channels=blendChannels!;Array.Clear(channels);
+        var pixels=layerPixels!;var channels=blendChannels!;Array.Clear(channels,0,channels.Length);
         var bounds=new Rectangle(0,0,size,size);
         void DrawLayer(double alpha,Action<Graphics> draw)
         {
@@ -58,7 +59,7 @@ public sealed class StatusGlyphArtwork:IDisposable
             using(var scratch=Graphics.FromImage(layer)){scratch.Clear(Color.Transparent);draw(scratch);}
             var data=layer.LockBits(bounds,ImageLockMode.ReadOnly,PixelFormat.Format32bppPArgb);
             try{Marshal.Copy(data.Scan0,pixels,0,pixels.Length);}finally{layer.UnlockBits(data);}
-            var weight=(int)Math.Round(Math.Clamp(alpha,0,1)*65535);
+            var weight=(int)Math.Round(RuntimeCompat.Clamp(alpha,0,1)*65535);
             for(var i=0;i<pixels.Length;i++)
             {
                 var value=(uint)pixels[i];var index=i*4;
@@ -73,8 +74,8 @@ public sealed class StatusGlyphArtwork:IDisposable
         // icons over one another. Their shared orb must not dip to 75% opacity.
         for(var i=0;i<pixels.Length;i++)
         {
-            var index=i*4;var a=Math.Clamp((channels[index+3]+32767)/65535,0,255);
-            int Straight(int offset)=>a==0?0:Math.Clamp((((channels[index+offset]+32767)/65535)*255+a/2)/a,0,255);
+            var index=i*4;var a=RuntimeCompat.Clamp((channels[index+3]+32767)/65535,0,255);
+            int Straight(int offset)=>a==0?0:RuntimeCompat.Clamp((((channels[index+offset]+32767)/65535)*255+a/2)/a,0,255);
             pixels[i]=(a<<24)|(Straight(2)<<16)|(Straight(1)<<8)|Straight(0);
         }
         var target=bitmap.LockBits(bounds,ImageLockMode.WriteOnly,PixelFormat.Format32bppArgb);
@@ -95,7 +96,7 @@ public sealed class StatusGlyphArtwork:IDisposable
         var progressValue=ProgressKey(progress)/1000f;
         if(progressValue>=1)g.FillEllipse(clockFace,inset,inset,diameter,diameter);
         else if(progressValue>0)g.FillPie(clockFace,inset,inset,diameter,diameter,-90,360*progressValue);
-        var phaseValue=(double.IsFinite(phase)?phase:0)%1;if(phaseValue<0)phaseValue++;
+        var phaseValue=(RuntimeCompat.IsFinite(phase)?phase:0)%1;if(phaseValue<0)phaseValue++;
         // A subtle rotating sheen stays inside the same ordinary clock face.
         // No dot matrix, detached rim, or extra progress ring is drawn.
         for(var i=0;i<48;i++)
@@ -117,7 +118,7 @@ public sealed class StatusGlyphArtwork:IDisposable
         g.SmoothingMode=SmoothingMode.AntiAlias;
         var saved=g.Save();g.ScaleTransform(size/32f,size/32f);
         orb.Color=color;g.FillEllipse(orb,1,1,30,30);
-        var scale=1+(float)Math.Clamp(pulse,0,1)*.08f;
+        var scale=1+(float)RuntimeCompat.Clamp(pulse,0,1)*.08f;
         g.TranslateTransform(16,16);g.ScaleTransform(scale,scale);g.TranslateTransform(-16,-16);
         // Same outline, optical offset and proportions as the main 34-DIP orb.
         g.ScaleTransform(32f/34,32f/34);g.TranslateTransform((34-16.4f)/2-.5f,(34-16f)/2-.5f);g.ScaleTransform(16.4f/20,16f/20);

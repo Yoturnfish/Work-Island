@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -22,7 +23,7 @@ public sealed class WindowsFullscreenSource : IFullscreenSource
         EnumWindows((window, _) =>
         {
             WindowsActivity.GetWindowThreadProcessId(window, out var pid);
-            if (pid == 0 || pid == Environment.ProcessId || !IsWindowVisible(window) || IsIconic(window)) return true;
+            if (pid == 0 || pid == RuntimeCompat.ProcessId || !IsWindowVisible(window) || IsIconic(window)) return true;
             if (DwmGetWindowAttribute(window, 14, out var cloaked, 4) != 0 || cloaked != 0) return true;
             var name = new StringBuilder(256); GetClassName(window, name, name.Capacity);
             if (name.ToString() is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd") return true;

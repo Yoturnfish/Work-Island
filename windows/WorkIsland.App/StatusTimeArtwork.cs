@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Drawing;
 using System.Drawing.Imaging;
 
@@ -13,7 +14,7 @@ public sealed class StatusTimeArtwork : IDisposable
     private Color tintColor;
     public Bitmap Render(double seconds,string style,string state,string accent,double progress,int size,Color? presentationColor=null,bool transparent=false,double[]? cellOpacities=null)
     {
-        var value=(long)Math.Clamp(double.IsFinite(seconds)?seconds:0,0,315360000);
+        var value=(long)RuntimeCompat.Clamp(RuntimeCompat.IsFinite(seconds)?seconds:0,0,315360000);
         var upper=style=="minutesSeconds"?$"{value/60}M":$"{value/3600}H";
         var lower=style=="minutesSeconds"?$"{value%60:00}S":$"{value/60%60:00}M";
         var key=upper+"/"+lower;
@@ -42,11 +43,11 @@ public sealed class StatusTimeArtwork : IDisposable
             shape.AddArc(0,0,8,8,180,90);shape.AddArc(24,0,8,8,270,90);shape.AddArc(24,24,8,8,0,90);shape.AddArc(0,24,8,8,90,90);shape.CloseFigure();graphics.FillPath(background,shape);
         }
         graphics.DrawImage(text,new Rectangle(0,0,32,32),0,0,32,32,GraphicsUnit.Pixel,tint);
-        var lit=(int)Math.Clamp(Math.Floor(Math.Clamp(progress,0,1)*10),0,10);
+        var lit=(int)RuntimeCompat.Clamp(Math.Floor(RuntimeCompat.Clamp(progress,0,1)*10),0,10);
         for(var i=0;i<10;i++)
         {
             var alpha=cellOpacities is {Length:10}?cellOpacities[i]:i<lit?.72:.10;
-            using var cell=new SolidBrush(Color.FromArgb((int)Math.Round(Math.Clamp(alpha,0,1)*255),color));
+            using var cell=new SolidBrush(Color.FromArgb((int)Math.Round(RuntimeCompat.Clamp(alpha,0,1)*255),color));
             graphics.FillRectangle(cell,2+i*2.8f,28,1.8f,2);
         }
         return bitmap;

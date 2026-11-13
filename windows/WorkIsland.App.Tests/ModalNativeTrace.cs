@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,15 +43,15 @@ internal sealed class ModalNativeTrace:IDisposable
         this.owner=owner;ownerHandle=new WindowInteropHelper(owner).Handle;path=Path.Combine(folder,"native-dialog-events.jsonl");
         hookCallback=OnHook;eventCallback=OnEvent;
         hook=SetWindowsHookEx(5,hookCallback,0,GetCurrentThreadId());
-        eventHook=SetWinEventHook(0x8000,0x8003,0,eventCallback,(uint)Environment.ProcessId,GetCurrentThreadId(),0);
-        Write(new{kind="installed",ownProcess=Environment.ProcessId,ownThread=GetCurrentThreadId(),cbt=hook!=0,winEvent=eventHook!=0});
+        eventHook=SetWinEventHook(0x8000,0x8003,0,eventCallback,(uint)RuntimeCompat.ProcessId,GetCurrentThreadId(),0);
+        Write(new{kind="installed",ownProcess=RuntimeCompat.ProcessId,ownThread=GetCurrentThreadId(),cbt=hook!=0,winEvent=eventHook!=0});
         if(hook==0||eventHook==0){Dispose();throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(),"Own-window trace registration failed");}
     }
     private bool Target(nint window)
     {
         if(seen.Contains(window))return true;
         if(window==0)return false;
-        GetWindowThreadProcessId(window,out var pid);if(pid!=Environment.ProcessId)return false;
+        GetWindowThreadProcessId(window,out var pid);if(pid!=RuntimeCompat.ProcessId)return false;
         var name=new StringBuilder(128);GetClassName(window,name,name.Capacity);
         if(name.ToString()!="#32770")return false;
         // CBT may precede the assignment of GW_OWNER. The later event records

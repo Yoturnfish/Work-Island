@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -14,7 +15,7 @@ public interface IStartupRegistration
 public static class StartupCommand
 {
     public static string Create(string executable,string dataDirectory) => Quote(Path.GetFullPath(executable))+
-        " --start-minimized --data-dir "+Quote(Path.TrimEndingDirectorySeparator(Path.GetFullPath(dataDirectory)));
+        " --start-minimized --data-dir "+Quote(RuntimeCompat.TrimEndingDirectorySeparator(Path.GetFullPath(dataDirectory)));
     private static string Quote(string value)
     {
         var result=new StringBuilder("\"");var slashes=0;

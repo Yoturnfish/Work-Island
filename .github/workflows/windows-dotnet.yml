@@ -2,7 +2,7 @@ name: Windows
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, 'codex/windows-net48-*']
     paths: ['windows/**', 'Specs/**', '.github/workflows/windows-dotnet.yml']
   pull_request:
 permissions:
@@ -18,13 +18,17 @@ jobs:
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
           global-json-file: windows/global.json
-      - name: Compile WPF and test harness
+      - name: Build lightweight Framework edition and run core checks
+        shell: pwsh
+        working-directory: windows
+        run: ./build-compat.ps1 -BuildId ci-net48 -SkipWindowTests
+      - name: Compile modern WPF and test harness
         shell: pwsh
         run: |
-          dotnet build windows/WorkIsland.App.Tests/WorkIsland.App.Tests.csproj -c Release --nologo
+          dotnet build windows/WorkIsland.App.Tests/WorkIsland.App.Tests.csproj -c Release -f net10.0-windows --nologo
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-      - name: Core regression tests
+      - name: Modern core regression tests
         shell: pwsh
         run: |
-          dotnet run --project windows/WorkIsland.Tests/WorkIsland.Tests.csproj -c Release -- --output windows/test-results/ci-core.json
+          dotnet run --project windows/WorkIsland.Tests/WorkIsland.Tests.csproj -c Release -f net10.0 -- --output windows/test-results/ci-modern-core.json
           if ($LASTEXITCODE) { exit $LASTEXITCODE }

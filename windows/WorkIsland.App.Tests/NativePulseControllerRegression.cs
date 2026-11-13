@@ -53,7 +53,7 @@ internal static partial class Program
         var handoffs=new List<object>();
         for(var index=0;index<16;index++)
         {
-            Call("SuspendNativeForeground");await Task.Delay(25);var phase=(Stopwatch.GetElapsedTime(epoch).TotalSeconds/5.6)%1;var expected=1+.08*(.5-.5*Math.Cos(phase*2*Math.PI));var error=Math.Abs(scale.ScaleX-expected);
+            Call("SuspendNativeForeground");await Task.Delay(25);var phase=(RuntimeCompat.GetElapsedTime(epoch).TotalSeconds/5.6)%1;var expected=1+.08*(.5-.5*Math.Cos(phase*2*Math.PI));var error=Math.Abs(scale.ScaleX-expected);
             handoffs.Add(new{index,phase,scale=scale.ScaleX,expected,error,wpf=scale.HasAnimatedProperties});Call("RefreshNativeForeground");await Task.Delay(25);
             check("handoff "+index+" retains phase and removes fallback clocks",error<.006&&Epoch()==epoch&&Active()&&!scale.HasAnimatedProperties&&Field<object?>("statusPulseClock")==null,new{error,epoch=Epoch(),snapshot=Snapshot()});
         }
@@ -102,6 +102,6 @@ internal static partial class Program
         var presentedBeforeFailure=((InstanceSnapshot)typeof(IslandWindow).GetMethod("CaptureInstanceSnapshot",Flags)!.Invoke(window,null)!).Foreground!.PresentedOpacity;
         ((IDisposable)glyph!).Dispose();engine.Data.Sessions[0].EffectiveSeconds+=60;Call("Render");await Task.Delay(80);
         check("disposed native plane restores live WPF and releases every plane",Field<bool>("nativeForegroundFailed")&&!Active()&&border.Opacity==1&&Math.Abs(window.Opacity-presentedBeforeFailure)<.000001&&scale.HasAnimatedProperties&&Count(glyph,"OwnedReferences")==0&&Count(cells,"OwnedReferences")==0&&Count(parent,"OwnedReferences")==0,new{presentedBeforeFailure,actual=Snapshot()});
-        File.WriteAllText(Path.Combine(output,"pulse-controller.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),handoffs,final=Snapshot(),scope="Actual production pulse controller explicitly opted in on isolated direct-window fixture; ordinary startup has not enabled it. Synthetic observations, routed keys and deliberate own-plane disposal exercise behavior. No real GPU reset or game/hardware acceptance."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"pulse-controller.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),handoffs,final=Snapshot(),scope="Actual production pulse controller explicitly opted in on isolated direct-window fixture; ordinary startup has not enabled it. Synthetic observations, routed keys and deliberate own-plane disposal exercise behavior. No real GPU reset or game/hardware acceptance."},AtomicStore.JsonOptions));
     }
 }

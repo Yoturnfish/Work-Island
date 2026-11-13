@@ -43,7 +43,7 @@ internal static partial class Program
             if(!prepared){File.Copy(moved,source);restored=true;Call("Persist");prepared=(bool)Call("PrepareNormalExit")!;}
             if(!prepared)throw new InvalidOperationException("Keep owned fixture: saved normal exit still refused");
             Call("CompleteNormalExit");await Task.Delay(50);
-            observations.Add(new{origin,saved,exact,neededSourceRestore=restored,normalExitPrepared=prepared,windowClosed=!owned.IsVisible,originalSha256=Convert.ToHexString(SHA256.HashData(raw)),retainedMovedSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(moved)))});
+            observations.Add(new{origin,saved,exact,neededSourceRestore=restored,normalExitPrepared=prepared,windowClosed=!owned.IsVisible,originalSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(raw)),retainedMovedSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(moved)))});
         }
         File.WriteAllText(Path.Combine(output,"legacy-ui.json"),JsonSerializer.Serialize(new{observations,scope="Exact product WPF windows, schema1 data loaded by AtomicStore then own source moved before window startup. Product Persist/normal-exit methods and real files; no ordinary EXE startup, physical input, crash, or user data."},AtomicStore.JsonOptions));
     }

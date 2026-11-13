@@ -117,7 +117,7 @@ public sealed class AtomicStore(string path)
             // version or replace missing/changed evidence without deleting any.
             using var primary=File.OpenRead(Path);
             using var copy=File.OpenRead(preservedInvalidPrimaryCopy);
-            return primary.Length==copy.Length&&SHA256.HashData(primary).AsSpan().SequenceEqual(SHA256.HashData(copy));
+            return primary.Length==copy.Length&&RuntimeCompat.HashData(primary).AsSpan().SequenceEqual(RuntimeCompat.HashData(copy));
         }
         catch(Exception error)when(error is IOException or UnauthorizedAccessException){return false;}
     }

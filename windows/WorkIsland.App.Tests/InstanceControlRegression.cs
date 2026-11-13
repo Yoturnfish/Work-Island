@@ -26,24 +26,24 @@ internal static partial class Program
         using var server=new InstanceControlServer(window,directory);
         try
         {
-            var before=SHA256.HashData(File.ReadAllBytes(store.Path));
+            var before=RuntimeCompat.HashData(File.ReadAllBytes(store.Path));
             var query=await InstanceControlClient.RequestAsync(directory,new("query"));
-            check("instance query returns actual PID startup and data identity",query.Success&&query.Instance?.ProcessId==Environment.ProcessId&&query.Instance.DataDirectory==InstanceProtocol.Normalize(directory)&&query.Window?.Loaded==true,null);
+            check("instance query returns actual PID startup and data identity",query.Success&&query.Instance?.ProcessId==RuntimeCompat.ProcessId&&query.Instance.DataDirectory==InstanceProtocol.Normalize(directory)&&query.Window?.Loaded==true,null);
             check("instance query identifies isolated startup provider without changing registration",query.Window?.StartupProvider=="isolated",query.Window?.StartupProvider);
-            check("instance query leaves data and window visibility unchanged",before.SequenceEqual(SHA256.HashData(File.ReadAllBytes(store.Path)))&&window.IsVisible,null);
-            var wrongPid=await InstanceControlClient.RequestAsync(directory,new("exit",Environment.ProcessId+1,query.Instance!.StartedUtcTicks));
-            var wrongStart=await InstanceControlClient.RequestAsync(directory,new("exit",Environment.ProcessId,"1"));
+            check("instance query leaves data and window visibility unchanged",before.SequenceEqual(RuntimeCompat.HashData(File.ReadAllBytes(store.Path)))&&window.IsVisible,null);
+            var wrongPid=await InstanceControlClient.RequestAsync(directory,new("exit",RuntimeCompat.ProcessId+1,query.Instance!.StartedUtcTicks));
+            var wrongStart=await InstanceControlClient.RequestAsync(directory,new("exit",RuntimeCompat.ProcessId,"1"));
             check("exit rejects PID reuse and wrong startup identity",!wrongPid.Success&&!wrongStart.Success&&!closed,null);
             var unsupported=await InstanceControlClient.RequestAsync(directory,new("execute arbitrary command"));
             check("endpoint has no arbitrary command execution",!unsupported.Success&&unsupported.Status=="unsupported-command"&&!closed,null);
-            using(var invalid=new NamedPipeClientStream(".",InstanceProtocol.PipeName(directory),PipeDirection.InOut,PipeOptions.Asynchronous|PipeOptions.CurrentUserOnly))
+            using(var invalid=InstancePipes.CreateClient(InstanceProtocol.PipeName(directory)))
             {
                 await invalid.ConnectAsync(1500);var prefix=new byte[4];BinaryPrimitives.WriteInt32LittleEndian(prefix,1000000000);await invalid.WriteAsync(prefix);await invalid.FlushAsync();
             }
             var afterMalformed=await InstanceControlClient.RequestAsync(directory,new("query"));
             check("oversized packet is rejected and server recovers",afterMalformed.Success&&!closed,null);
             typeof(IslandWindow).GetField("applicationChooserOpen",Flags)!.SetValue(window,true);
-            var modal=await InstanceControlClient.RequestAsync(directory,new("exit",Environment.ProcessId,query.Instance.StartedUtcTicks));
+            var modal=await InstanceControlClient.RequestAsync(directory,new("exit",RuntimeCompat.ProcessId,query.Instance.StartedUtcTicks));
             check("normal exit refuses an active application chooser",!modal.Success&&modal.Status=="save-or-dialog-blocked"&&!closed,null);
             typeof(IslandWindow).GetField("applicationChooserOpen",Flags)!.SetValue(window,false);
             var held=directory+".held";var scope=Path.GetFullPath(folder)+Path.DirectorySeparatorChar;
@@ -51,10 +51,10 @@ internal static partial class Program
             Directory.Move(directory,held);File.WriteAllText(directory,"Owned fixture blocks saves; preserved after recovery.");
             var pending=new Session{ApplicationIdentifier="pending-exit.exe",ApplicationName="Pending fixture",StartedAt=DateTimeOffset.Now,EndedAt=DateTimeOffset.Now,DayKey=LogicalDay.Key(DateTimeOffset.Now,TimeZoneInfo.Local,0),EffectiveSeconds=60};state.Sessions.Add(pending);
             var timer=(DispatcherTimer)typeof(IslandWindow).GetField("timer",Flags)!.GetValue(window)!;timer.Start();
-            var saveFailed=await InstanceControlClient.RequestAsync(directory,new("exit",Environment.ProcessId,query.Instance.StartedUtcTicks));
+            var saveFailed=await InstanceControlClient.RequestAsync(directory,new("exit",RuntimeCompat.ProcessId,query.Instance.StartedUtcTicks));
             check("endpoint reports failed save and keeps tracking plus memory record alive",!saveFailed.Success&&saveFailed.Status=="save-or-dialog-blocked"&&saveFailed.Error?.Contains("保存失败")==true&&!closed&&timer.IsEnabled&&state.Sessions.Contains(pending),null);
             timer.Stop();File.Move(directory,directory+".blocker-kept");Directory.Move(held,directory);
-            var exit=await InstanceControlClient.RequestAsync(directory,new("exit",Environment.ProcessId,query.Instance.StartedUtcTicks));await Task.Delay(100);
+            var exit=await InstanceControlClient.RequestAsync(directory,new("exit",RuntimeCompat.ProcessId,query.Instance.StartedUtcTicks));await Task.Delay(100);
             check("identity-checked endpoint uses normal saved exit",exit.Success&&exit.Status=="exit-prepared"&&closed&&store.Load().Sessions.Exists(s=>s.Id==pending.Id&&s.EffectiveSeconds==60),null);
         }
         finally
@@ -71,13 +71,13 @@ internal static partial class Program
         // build or fail before the CLI checks have exercised any product code.
         var product=typeof(IslandWindow).Assembly.Location;
         var executable=Path.ChangeExtension(product,".exe");
-        File.WriteAllText(Path.Combine(folder,"native-cli-binary.json"),JsonSerializer.Serialize(new{product,executable,appSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(product)))},AtomicStore.JsonOptions));
-        var host=Path.GetFileNameWithoutExtension(Environment.ProcessPath)=="dotnet"?Environment.ProcessPath!:Path.GetFullPath(Path.Combine(root,"..","..","tools","dotnet-10.0.401","dotnet.exe"));
+        File.WriteAllText(Path.Combine(folder,"native-cli-binary.json"),JsonSerializer.Serialize(new{product,executable,appSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(product)))},AtomicStore.JsonOptions));
+        var host=Path.GetFileNameWithoutExtension(RuntimeCompat.ProcessPath)=="dotnet"?RuntimeCompat.ProcessPath!:Path.GetFullPath(Path.Combine(root,"..","..","tools","dotnet-10.0.401","dotnet.exe"));
         async Task<(int Code,string Output)> Cli(params string[] arguments)
         {
             var info=new ProcessStartInfo(executable){UseShellExecute=false,CreateNoWindow=true,RedirectStandardOutput=true,RedirectStandardError=true};
             info.Environment["DOTNET_ROOT"]=Path.GetDirectoryName(host);info.Environment["DOTNET_ROOT_X64"]=Path.GetDirectoryName(host);
-            foreach(var argument in arguments)info.ArgumentList.Add(argument);
+            foreach(var argument in arguments)TestRuntime.AddArgument(info,argument);
             using var client=Process.Start(info)!;var stdout=client.StandardOutput.ReadToEndAsync();var stderr=client.StandardError.ReadToEndAsync();
             using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(16));await client.WaitForExitAsync(timeout.Token);
             return(client.ExitCode,(await stdout)+(await stderr));
@@ -85,7 +85,7 @@ internal static partial class Program
         var unused=Path.Combine(folder,"must-not-create");
         foreach(var arguments in new[]{new[]{"--query-instance"},new[]{"--request-exit","--data-dir",unused},new[]{"--request-exit","--data-dir",unused,"--expect-pid","0","--expect-start-ticks","1"},new[]{"--query-instance","--preview","--data-dir",unused},new[]{"--query-instance","--data-dir",unused,"--expect-pid","1"}})
         {
-            var result=await Cli(arguments);check("invalid control CLI rejects without opening GUI: "+string.Join(' ',arguments.Take(2)),result.Code==2&&!Directory.Exists(unused),null);
+            var result=await Cli(arguments);check("invalid control CLI rejects without opening GUI: "+string.Join(" ",arguments.Take(2)),result.Code==2&&!Directory.Exists(unused),null);
         }
         var missing=await Cli("--query-instance","--data-dir",unused);
         check("missing instance query creates no state directory",missing.Code==3&&!Directory.Exists(unused),null);
@@ -96,7 +96,7 @@ internal static partial class Program
         // creating a fresh state. Preserve the original bytes as separate evidence.
         File.Move(nativeStore.Path,nativeStore.Path+".bak");
         File.Copy(nativeStore.Path+".bak",nativeStore.Path+".original-backup-kept");
-        var launch=new ProcessStartInfo(executable){UseShellExecute=false,CreateNoWindow=true};launch.Environment["DOTNET_ROOT"]=Path.GetDirectoryName(host);launch.Environment["DOTNET_ROOT_X64"]=Path.GetDirectoryName(host);launch.ArgumentList.Add("--instance-review");launch.ArgumentList.Add("--data-dir");launch.ArgumentList.Add(data);
+        var launch=new ProcessStartInfo(executable){UseShellExecute=false,CreateNoWindow=true};launch.Environment["DOTNET_ROOT"]=Path.GetDirectoryName(host);launch.Environment["DOTNET_ROOT_X64"]=Path.GetDirectoryName(host);TestRuntime.AddArgument(launch,"--instance-review");TestRuntime.AddArgument(launch,"--data-dir");TestRuntime.AddArgument(launch,data);
         using var process=Process.Start(launch)!;var expected=process.StartTime.ToUniversalTime().Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture);
         try
         {
@@ -114,7 +114,7 @@ internal static partial class Program
             var queryCli=await Cli("--query-instance","--data-dir",data);var parsed=JsonSerializer.Deserialize<InstanceResponse>(queryCli.Output,AtomicStore.JsonOptions);
             check("actual query CLI returns machine-readable running state",queryCli.Code==0&&parsed?.Window?.Loaded==true&&parsed.Instance?.ProcessId==process.Id,null);
             check("actual Program startup uses live foreground without snapshot captures and exposes its current HWND",parsed?.Window?.Foreground is {Enabled:false,Active:false,Failed:false,Captures:0,WindowHandle:>0}&&parsed.Window.WpfRenderMode=="Default",parsed?.Window?.Foreground);
-            using var self=Process.GetCurrentProcess();var wrong=await Cli("--request-exit","--data-dir",data,"--expect-pid",Environment.ProcessId.ToString(),"--expect-start-ticks",self.StartTime.ToUniversalTime().Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            using var self=Process.GetCurrentProcess();var wrong=await Cli("--request-exit","--data-dir",data,"--expect-pid",RuntimeCompat.ProcessId.ToString(),"--expect-start-ticks",self.StartTime.ToUniversalTime().Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
             check("actual CLI cannot close a different process identity",wrong.Code==3&&!process.HasExited,null);
             var result=await Cli("--request-exit","--data-dir",data,"--expect-pid",process.Id.ToString(),"--expect-start-ticks",expected);
             check("actual exit CLI confirms OS process exit",result.Code==0&&process.HasExited&&process.ExitCode==0,new{result.Code});

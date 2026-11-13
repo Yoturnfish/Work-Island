@@ -78,6 +78,6 @@ internal static partial class Program
         await Task.Delay(1650);
         check("preview completion automatically restores native paused foreground",Field<bool>("nativeForegroundActive")&&Clock()==null&&!glow.HasAnimatedProperties,null);
         File.WriteAllText(Path.Combine(output,"preview-curve.json"),JsonSerializer.Serialize(curve.Select(p=>new{p.seconds,p.opacity}),AtomicStore.JsonOptions));
-        File.WriteAllText(Path.Combine(output,"reminder-schedule.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),samples,scope="Own actual WPF selectors and clocks; controlled tracking/away timestamps and onboarding handlers. No native input, physical session, game or wall-clock threshold wait."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"reminder-schedule.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),samples,scope="Own actual WPF selectors and clocks; controlled tracking/away timestamps and onboarding handlers. No native input, physical session, game or wall-clock threshold wait."},AtomicStore.JsonOptions));
     }
 }

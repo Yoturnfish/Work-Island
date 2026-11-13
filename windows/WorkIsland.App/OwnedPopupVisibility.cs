@@ -16,7 +16,7 @@ public partial class IslandWindow
         // Win32 owned windows are independent top-level windows: hiding their
         // owner does not hide the native file dialog. Restrict the operation
         // to this island's owner HWND; never enumerate or control other apps.
-        if(handle!=0&&ShowOwnedPopups(handle,false))ownedPopupsSuppressed=true;
+        if(handle!=IntPtr.Zero&&ShowOwnedPopups(handle,false))ownedPopupsSuppressed=true;
     }
     private void RestoreOwnedPopups()
     {
@@ -24,7 +24,7 @@ public partial class IslandWindow
         var handle=new WindowInteropHelper(this).Handle;
         // This restores only popups hidden by the matching Win32 call, not
         // menus or dropdowns the application already closed before hiding.
-        if(handle!=0&&ShowOwnedPopups(handle,true))ownedPopupsSuppressed=false;
+        if(handle!=IntPtr.Zero&&ShowOwnedPopups(handle,true))ownedPopupsSuppressed=false;
     }
     [DllImport("user32.dll",SetLastError=true)]
     private static extern bool ShowOwnedPopups(nint owner,[MarshalAs(UnmanagedType.Bool)]bool show);

@@ -36,7 +36,7 @@ internal static partial class Program
         async Task Pulse(bool measure,int index)
         {
             Select(false);await Task.Delay(60);process.Refresh();
-            var cpu=process.TotalProcessorTime.TotalSeconds;var allocated=GC.GetTotalAllocatedBytes(false);var before=process.PrivateMemorySize64;
+            var cpu=process.TotalProcessorTime.TotalSeconds;var allocated=TestRuntime.GetTotalAllocatedBytes(false);var before=process.PrivateMemorySize64;
             var handles=process.HandleCount;var gdi=ReminderGuiResources(process.Handle,0);var user=ReminderGuiResources(process.Handle,1);
             var watch=Stopwatch.StartNew();Select(true);
             if(Field<AnimationClock?>("reminderClock") is {} clock)weakClocks.Add(new(clock));
@@ -44,7 +44,7 @@ internal static partial class Program
             if(measure)
             {
                 rows.Add(new{index,seconds,cpuSeconds=process.TotalProcessorTime.TotalSeconds-cpu,oneCorePercent=100*(process.TotalProcessorTime.TotalSeconds-cpu)/seconds,
-                    allocatedBytes=GC.GetTotalAllocatedBytes(false)-allocated,privateBefore=before,privateAfter=process.PrivateMemorySize64,handlesBefore=handles,handlesAfter=process.HandleCount,
+                    allocatedBytes=TestRuntime.GetTotalAllocatedBytes(false)-allocated,privateBefore=before,privateAfter=process.PrivateMemorySize64,handlesBefore=handles,handlesAfter=process.HandleCount,
                     gdiBefore=gdi,gdiAfter=ReminderGuiResources(process.Handle,0),userBefore=user,userAfter=ReminderGuiResources(process.Handle,1),window.IsActive,
                     glow.Opacity,glow.HasAnimatedProperties,clockRemaining=Field<AnimationClock?>("reminderClock")!=null,nativeActive=Field<bool>("nativeForegroundActive")});
                 check("resource pulse "+index+" ends and restores native foreground",glow.Opacity==0&&!glow.HasAnimatedProperties&&Field<AnimationClock?>("reminderClock")==null&&Field<bool>("nativeForegroundActive"),rows[^1]);
@@ -63,7 +63,7 @@ internal static partial class Program
         check("repeated reminders leave GDI and USER handles stable",gdiAfter<=gdiBefore+1&&userAfter<=userBefore+1,new{gdiBefore,gdiAfter,userBefore,userAfter});
         window.Hide();Call("Render");check("hidden final reminder owns no animation",Field<AnimationClock?>("reminderClock")==null&&!glow.HasAnimatedProperties&&glow.Opacity==0,null);
         File.WriteAllText(Path.Combine(output,"reminder-resource.json"),JsonSerializer.Serialize(new{
-            appSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),idle,rows,
+            appSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),idle,rows,
             managedBefore,managedAfter,privateBefore,privateAfter,gdiBefore,gdiAfter,userBefore,userAfter,clocksCreated=weakClocks.Count,retainedClocks=retained,
             scope="Own real WPF animation and production native handoff, 3 warmup and 8 measured previews. SoftwareOnly, paused isolated data and actual selectors, no screenshots, external UI tool connection or input injection during sampling. CPU is per-process bounded sample, not GPU/DWM/system total or long-run proof; GC outside timed samples."
         },AtomicStore.JsonOptions));

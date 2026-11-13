@@ -53,7 +53,7 @@ internal static partial class Program
                     string Mark()=>((DockPanel)row.Content).Children.OfType<TextBlock>().First().Text;
                     if(live)
                     {
-                        File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=Environment.ProcessId,window.Title,addressLength=source.BrowserAddress.Length,scope="Controlled browser source and real product WPF handlers; official native input only after ready. Not an external browser URL read."},AtomicStore.JsonOptions));
+                        File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=RuntimeCompat.ProcessId,window.Title,addressLength=source.BrowserAddress.Length,scope="Controlled browser source and real product WPF handlers; official native input only after ready. Not an external browser URL read."},AtomicStore.JsonOptions));
                         for(var stage=1;stage<=2;stage++)
                         {
                             var watch=Stopwatch.StartNew();var marker=Path.Combine(output,$"stage-{stage}.txt");while(!File.Exists(marker)&&watch.Elapsed.TotalSeconds<120)await Task.Delay(100);

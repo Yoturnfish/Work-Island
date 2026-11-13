@@ -4,7 +4,8 @@ param(
     [string]$OutputDir='',
     [string]$PackageName='',
     [string]$TestRoot='',
-    [string]$TestId=''
+    [string]$TestId='',
+    [switch]$BuiltinFramework
 )
 $ErrorActionPreference='Stop'
 if(!$Compiler){$Compiler=(Get-Command ISCC.exe -ErrorAction Stop).Source}
@@ -13,10 +14,14 @@ if(!$PayloadDir){$props=[xml](Get-Content (Join-Path $projectRoot 'Directory.Bui
 if(!$OutputDir){$OutputDir=Join-Path $projectRoot 'artifacts'}
 $PayloadDir=[IO.Path]::GetFullPath($PayloadDir);$OutputDir=[IO.Path]::GetFullPath($OutputDir)
 $privateNames=@('Data','PreviewData','backups','test-results','.cache','state.json','state.json.bak','errors.log')
-if(Get-ChildItem -LiteralPath $PayloadDir -Recurse -Force | Where-Object {$_.Name -in $privateNames}){throw 'Payload contains private/test data; publish to a fresh clean directory before packaging.'}
+if(Get-ChildItem -LiteralPath $PayloadDir -Recurse -Force|Where-Object {$_.Name -in $privateNames}){throw 'Private or acceptance data found in installer payload'}
 foreach($path in @($PayloadDir,$OutputDir,$TestRoot)){if($path.Contains("'")){throw 'Inno script paths cannot contain apostrophes'}}
 if(!(Test-Path -LiteralPath $Compiler)){throw 'Official portable Inno Setup compiler was not found. See Installer/README.md.'}
-if(!(Test-Path -LiteralPath (Join-Path $PayloadDir 'runtime\host\fxr'))){throw 'Payload has no bundled runtime'}
+if($BuiltinFramework){
+    $config=[xml](Get-Content -LiteralPath (Join-Path $PayloadDir 'WorkIsland.exe.config') -Raw)
+    if($config.configuration.startup.supportedRuntime.sku -ne '.NETFramework,Version=v4.8'){throw 'Payload is not the .NET Framework 4.8 build'}
+    if(Test-Path -LiteralPath (Join-Path $PayloadDir 'runtime')){throw 'Built-in framework payload must not bundle a modern runtime'}
+}elseif(!(Test-Path -LiteralPath (Join-Path $PayloadDir 'runtime\host\fxr'))){throw 'Payload has no bundled runtime'}
 if($TestRoot){
     $TestRoot=[IO.Path]::GetFullPath($TestRoot)
     if(!$TestRoot.StartsWith((Join-Path $projectRoot 'test-results')+'\',[StringComparison]::OrdinalIgnoreCase)){throw 'Acceptance root must be inside this project test-results'}
@@ -52,6 +57,7 @@ if(Test-Path -LiteralPath $manifestPath){
 }
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 $arguments=@('/Qp',('/DPayloadDir='+$PayloadDir),('/DOutputDir='+$OutputDir),('/DProductVersion='+$version),('/DPackageName='+$PackageName))
+if($BuiltinFramework){$arguments+='/DBuiltinFramework=1'}
 if($TestRoot){$arguments+=@(('/DTestRoot='+$TestRoot),('/DTestId='+$TestId))}
 $arguments+=Join-Path $PSScriptRoot 'WorkIsland.iss'
 & $Compiler @arguments
@@ -59,6 +65,7 @@ if($LASTEXITCODE -ne 0){throw 'Installer compilation failed'}
 $package=Join-Path $OutputDir ($PackageName+'.exe')
 if((Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'WorkIsland.iss')).Hash -ne $scriptHash){throw 'Installer source changed during compilation'}
 Assert-PayloadManifest
-$source=@{compiler=$Compiler;compilerVersion=(Get-Item $Compiler).VersionInfo.FileVersion;compilerSha256=(Get-FileHash $Compiler).Hash;scriptSha256=$scriptHash;payload=$PayloadDir;payloadManifestSha256=$manifestHash;payloadFiles=if($manifestEntries){$manifestEntries.Count}else{$null};appVersion=$version;appSha256=(Get-FileHash (Join-Path $PayloadDir 'WorkIsland.dll')).Hash;installer=$package;installerSha256=(Get-FileHash $package).Hash;acceptanceRoot=$TestRoot;acceptanceId=$TestId}
+$appBinary=if($BuiltinFramework){'WorkIsland.exe'}else{'WorkIsland.dll'}
+$source=@{compiler=$Compiler;compilerVersion=(Get-Item $Compiler).VersionInfo.FileVersion;compilerSha256=(Get-FileHash $Compiler).Hash;scriptSha256=$scriptHash;payload=$PayloadDir;payloadManifestSha256=$manifestHash;payloadFiles=if($manifestEntries){$manifestEntries.Count}else{$null};appVersion=$version;appBinary=$appBinary;builtinFramework=[bool]$BuiltinFramework;appSha256=(Get-FileHash (Join-Path $PayloadDir $appBinary)).Hash;installer=$package;installerSha256=(Get-FileHash $package).Hash;acceptanceRoot=$TestRoot;acceptanceId=$TestId}
 $source | ConvertTo-Json -Depth 5 | Set-Content ($package+'.build.json')
 $package

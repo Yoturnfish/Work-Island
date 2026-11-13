@@ -71,7 +71,7 @@ internal static partial class Program
         check("recovered popup notice follows English",Notice().Text=="Changes saved.",Notice().Text);
         foreach(var ownedMenu in menus)ownedMenu.IsOpen=false;
         await Task.Delay(250);
-        File.WriteAllText(Path.Combine(output,"profile-save.json"),JsonSerializer.Serialize(new{appSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),coreSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(TrackingEngine).Assembly.Location))),observations,scope="Actual FileStream primary-file locks and actual own WPF profile controls/events, in-memory changes plus durable background recovery. No native input or user-data mutations; unchanged Mac text binding, delete confirmation and missing-active-ID semantics."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"profile-save.json"),JsonSerializer.Serialize(new{appSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),coreSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(TrackingEngine).Assembly.Location))),observations,scope="Actual FileStream primary-file locks and actual own WPF profile controls/events, in-memory changes plus durable background recovery. No native input or user-data mutations; unchanged Mac text binding, delete confirmation and missing-active-ID semantics."},AtomicStore.JsonOptions));
     }
 }
 

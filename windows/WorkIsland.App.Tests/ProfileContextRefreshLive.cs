@@ -28,7 +28,7 @@ internal static partial class Program
         void Write(string name,object value)=>File.WriteAllText(Path.Combine(output,name),JsonSerializer.Serialize(value,AtomicStore.JsonOptions));
         engine.Data.Settings.Paused=true;engine.Data.Settings.Rules=[];engine.Data.Settings.Language="zh";engine.Data.Settings.ReduceMotion=true;engine.Data.Settings.BackgroundStyle="black";engine.ResetObservation();
         Field<DispatcherTimer>("fullscreenTimer").Stop();Field<DispatcherTimer>("focusReturn").Stop();
-        window.Title="Work Island · 组合刷新实测 · "+Environment.ProcessId;window.ShowInTaskbar=true;window.Topmost=false;window.Left=460;window.Top=300;
+        window.Title="Work Island · 组合刷新实测 · "+RuntimeCompat.ProcessId;window.ShowInTaskbar=true;window.Topmost=false;window.Left=460;window.Top=300;
         Call("RenameCurrentProfile","旧名称");Call("ToggleExpanded",null,new RoutedEventArgs());Call("OpenRecognition",window,new RoutedEventArgs());await Task.Delay(150);window.UpdateLayout();Call("Persist");
         RoutedEventHandler click=(_,_)=>{if(color.ContextMenu?.IsOpen==true)normalOpens++;};
         ContextMenuEventHandler opening=(_,args)=>
@@ -65,14 +65,14 @@ internal static partial class Program
         color.AddHandler(Button.ClickEvent,click,true);color.AddHandler(ContextMenuService.ContextMenuOpeningEvent,opening,true);
         try
         {
-            Write("ready.json",new{processId=Environment.ProcessId,startedUtcTicks=Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks.ToString(),windowHandle=new WindowInteropHelper(window).Handle.ToInt64(),window.Title,scope="Await official actual left color click and Escape, then update marker. Title update is a controlled actual WPF editor routed Enter; language is controlled model setting, not physical typing or OS language."});
+            Write("ready.json",new{processId=RuntimeCompat.ProcessId,startedUtcTicks=Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks.ToString(),windowHandle=new WindowInteropHelper(window).Handle.ToInt64(),window.Title,scope="Await official actual left color click and Escape, then update marker. Title update is a controlled actual WPF editor routed Enter; language is controlled model setting, not physical typing or OS language."});
             await WaitFile("update.txt",180);
             check("official left click created retained menu and Escape closed it",normalOpens==1&&color.ContextMenu is not null&&!color.ContextMenu.IsOpen,null);
             var editor=Field<TextBox>("TitleEditor");editor.Text="当前名称";editor.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(window)!,0,Key.Enter){RoutedEvent=Keyboard.KeyDownEvent});
             engine.Data.Settings.Language="en";Call("ApplyLanguage");Call("Persist");
             check("controlled title edit committed actual current data",store.Load().Settings.DisplayTitle=="当前名称",null);
             var bytes=File.ReadAllBytes(store.Path);var memory=JsonSerializer.Serialize(engine.Data,AtomicStore.JsonOptions);
-            armed=true;Write("updated.json",new{processId=Environment.ProcessId,title=engine.Data.Settings.DisplayTitle,language=engine.Data.Settings.Language});
+            armed=true;Write("updated.json",new{processId=RuntimeCompat.ProcessId,title=engine.Data.Settings.DisplayTitle,language=engine.Data.Settings.Language});
             await observed.Task.WaitAsync(TimeSpan.FromSeconds(90));
             check("actual right-click view refresh does not write or mutate saved data",File.ReadAllBytes(store.Path).AsSpan().SequenceEqual(bytes)&&JsonSerializer.Serialize(engine.Data,AtomicStore.JsonOptions)==memory,null);
             await WaitFile("finish.txt",90);

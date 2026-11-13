@@ -68,12 +68,12 @@ internal static partial class Program
         if(live)
         {
             settings.ReduceMotion=false;Call("Render");await Task.Delay(450);
-            window.Title="Work Island · 闪烁验收 · "+Environment.ProcessId;window.ShowInTaskbar=true;window.Topmost=true;
-            var guard=new Window{Title="Work Island · 外部点击验收 · "+Environment.ProcessId,Width=540,Height=220,Left=100,Top=80,Background=System.Windows.Media.Brushes.White,Content=new TextBlock{Text="独立点击区域",Margin=new Thickness(30)}};guard.Show();
+            window.Title="Work Island · 闪烁验收 · "+RuntimeCompat.ProcessId;window.ShowInTaskbar=true;window.Topmost=true;
+            var guard=new Window{Title="Work Island · 外部点击验收 · "+RuntimeCompat.ProcessId,Width=540,Height=220,Left=100,Top=80,Background=System.Windows.Media.Brushes.White,Content=new TextBlock{Text="独立点击区域",Margin=new Thickness(30)}};guard.Show();
             void Record(string action)=>File.AppendAllText(Path.Combine(output,"actual-input.jsonl"),JsonSerializer.Serialize(new{action,at=DateTimeOffset.Now,native=Active(),captures=Captures(),expanded=Field<bool>("isExpanded")} )+Environment.NewLine);
             window.Activated+=(_,_)=>Record("activated");window.Deactivated+=(_,_)=>Record("deactivated");
             window.PreviewMouseUp+=(_,_)=>window.Dispatcher.BeginInvoke(()=>Record("mouse-up"),DispatcherPriority.Background);
-            File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=Environment.ProcessId,title=window.Title,guard=guard.Title}));
+            File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=RuntimeCompat.ProcessId,title=window.Title,guard=guard.Title}));
             try{var watch=Stopwatch.StartNew();while(watch.Elapsed.TotalSeconds<180&&!File.Exists(Path.Combine(output,"finish-review.txt")))await Task.Delay(200);}
             finally{guard.Close();}
         }

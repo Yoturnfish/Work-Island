@@ -88,7 +88,7 @@ internal static partial class Program
                 Call("SetPresentedWindowOpacity",.5);Call("StartStatusPulseClock");typeof(PixelProgress).GetMethod("StartWpfPulse",Flags)!.Invoke(progress,null);await Task.Delay(100);
                 save.Invoke(window,[Path.Combine(output,stem+"-before-handoff-wpf.png"),23]);
                 var folder=Path.Combine(output,stem+"-motion");Directory.CreateDirectory(folder);var watch=Stopwatch.StartNew();
-                timingOrigins.Add(new{state,style,glyphElapsedSecondsAtStart=Stopwatch.GetElapsedTime(Field<long>("statusPulseEpoch")).TotalSeconds,cellsElapsedSecondsAtStart=Stopwatch.GetElapsedTime((long)typeof(PixelProgress).GetField("pulseEpoch",Flags)!.GetValue(progress)!).TotalSeconds});
+                timingOrigins.Add(new{state,style,glyphElapsedSecondsAtStart=RuntimeCompat.GetElapsedTime(Field<long>("statusPulseEpoch")).TotalSeconds,cellsElapsedSecondsAtStart=RuntimeCompat.GetElapsedTime((long)typeof(PixelProgress).GetField("pulseEpoch",Flags)!.GetValue(progress)!).TotalSeconds});
                 Call("RefreshNativeForeground");
                 var index=0;while(watch.Elapsed.TotalSeconds<(state=="paused"?3.6:5.6))
                 {
@@ -99,7 +99,7 @@ internal static partial class Program
         finally
         {
             Call("SuspendNativeForeground");typeof(IslandWindow).GetField("fidelityBackground",Flags)!.SetValue(window,null);background.Close();
-            File.WriteAllText(Path.Combine(output,"native-pulse-probe.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),material=glass?"glass":"black",dpi,rows,motionRows,timingOrigins,scope="Explicitly opted-in real production controller on isolated actual HWND; actual desktop pixels over owned white background (glass uses this solid backdrop only). Fixed poses pause actual attached native controllers and remove reference WPF loops. Live recording starts at constant-.5 WPF->native handoff after alpha setup is visibly committed; all handoff frames retained. Untouched real controller epochs recorded separately per component; no live scalar getters. Not ordinary-startup, actual input, GPU reset, patterned glass, hardware or game acceptance."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"native-pulse-probe.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),material=glass?"glass":"black",dpi,rows,motionRows,timingOrigins,scope="Explicitly opted-in real production controller on isolated actual HWND; actual desktop pixels over owned white background (glass uses this solid backdrop only). Fixed poses pause actual attached native controllers and remove reference WPF loops. Live recording starts at constant-.5 WPF->native handoff after alpha setup is visibly committed; all handoff frames retained. Untouched real controller epochs recorded separately per component; no live scalar getters. Not ordinary-startup, actual input, GPU reset, patterned glass, hardware or game acceptance."},AtomicStore.JsonOptions));
         }
     }
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]private delegate int PulseReviewGetController(nint source,nint property,out nint controller);

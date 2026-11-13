@@ -37,7 +37,7 @@ public partial class IslandWindow
         {
             var path=Path.Combine(output,"stability-progress.json");
             File.WriteAllText(path+".tmp",JsonSerializer.Serialize(new{status,elapsedSeconds=watch.Elapsed.TotalSeconds,requestedSeconds=StabilitySeconds,operations,observations,background=BackgroundStabilityReview,backgroundVisibilityViolation,observedLogicalDays,sampleCount=samples.Count,samples=samples.TakeLast(6).ToArray()},AtomicStore.JsonOptions));
-            File.Move(path+".tmp",path,true);
+            RuntimeCompat.MoveFile(path+".tmp",path,true);
         }
         try
         {

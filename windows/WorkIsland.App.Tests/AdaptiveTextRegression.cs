@@ -59,7 +59,7 @@ internal static partial class Program
             var sample=new{name,dark=LiveDark(),title=((SolidColorBrush)title.Foreground).Color,time=((SolidColorBrush)time.Foreground).Color,count=Count(),native=Field<bool>("nativeForegroundActive"),lastMs=Field<object?>("textBackdropSampler")?.GetType().GetProperty("LastMilliseconds",member)!.GetValue(Field<object>("textBackdropSampler"))};samples.Add(sample);
             File.WriteAllText(Path.Combine(output,"contrast-stages.json"),JsonSerializer.Serialize(samples,AtomicStore.JsonOptions));
             if(!review)return;
-            File.WriteAllText(Path.Combine(output,"review-stage.json"),JsonSerializer.Serialize(new{stage=name,processId=Environment.ProcessId,window=window.Title},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"review-stage.json"),JsonSerializer.Serialize(new{stage=name,processId=RuntimeCompat.ProcessId,window=window.Title},AtomicStore.JsonOptions));
             var wait=Stopwatch.StartNew();while(!File.Exists(Path.Combine(output,"continue-"+name+".json"))&&wait.Elapsed.TotalSeconds<180)await Task.Delay(100);
         }
         async Task CheckSemanticTime(string scene)

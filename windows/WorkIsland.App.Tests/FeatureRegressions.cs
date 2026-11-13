@@ -82,7 +82,7 @@ internal static class FeatureRegressions
             foreach(var mode in new[]{"tracking","away","paused"})
             {
                 using var bitmap=TrayArtwork.Render(mode,"green",32);using var icon=TrayArtwork.Icon(mode,"green");
-                Check("formal tray "+mode+" glyph has transparent margins and opaque status color",bitmap.GetPixel(0,0).A==0 && bitmap.GetPixel(16,5).A==255 && icon.Handle!=0);
+                Check("formal tray "+mode+" glyph has transparent margins and opaque status color",bitmap.GetPixel(0,0).A==0 && bitmap.GetPixel(16,5).A==255 && icon.Handle!=IntPtr.Zero);
             }
             var ico=TrayArtwork.Ico("tracking","green");
             Check("formal app icon supplies 16/20/24/32/48/64/256 resolution entries",BitConverter.ToUInt16(ico,4)==7 && File.Exists(Path.Combine(AppContext.BaseDirectory,"Assets","WorkIsland.ico")));

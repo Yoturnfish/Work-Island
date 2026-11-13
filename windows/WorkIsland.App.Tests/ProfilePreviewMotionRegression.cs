@@ -60,7 +60,7 @@ internal static partial class Program
         var retainedBrushes=new List<nint>();nint scanProperty=0;
         bool HasController(nint observer)
         {
-            var get=Marshal.GetDelegateForFunctionPointer<DisposalController>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(observer),6*nint.Size));
+            var get=Marshal.GetDelegateForFunctionPointer<DisposalController>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(observer),6*IntPtr.Size));
             Marshal.ThrowExceptionForHR(get(observer,scanProperty,out var controller));if(controller==0)return false;Marshal.Release(controller);return true;
         }
         try
@@ -85,7 +85,7 @@ internal static partial class Program
                 foreach(var p in previews)
                 {
                     var native=Native(p)!;var brushes=(List<nint>)native.GetType().GetField("brushes",Flags)!.GetValue(native)!;var iid=new Guid("0bb3784c-346b-4a7c-966b-7310966553d5");
-                    Marshal.ThrowExceptionForHR(Marshal.QueryInterface(brushes[0],in iid,out var observer));retainedBrushes.Add(observer);
+                    Marshal.ThrowExceptionForHR(RuntimeCompat.QueryInterface(brushes[0],iid,out var observer));retainedBrushes.Add(observer);
                 }
             }
             check("both previews have real compositor animation controllers",retainedBrushes.Count==2&&retainedBrushes.All(HasController),new{retained=retainedBrushes.Count});

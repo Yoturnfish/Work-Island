@@ -221,7 +221,7 @@ public partial class IslandWindow : Window
         var typeface = new Typeface(TitleLabel.FontFamily, TitleLabel.FontStyle, TitleLabel.FontWeight, TitleLabel.FontStretch);
         var text = new FormattedText(TitleLabel.Text, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, typeface, 13,
             Brushes.White,null,TextOptions.GetTextFormattingMode(TitleLabel),VisualTreeHelper.GetDpi(this).PixelsPerDip);
-        TitleLabel.FontSize = 13 * Math.Clamp(TitleLabel.ActualWidth / Math.Max(1, text.WidthIncludingTrailingWhitespace), .65, 1);
+        TitleLabel.FontSize = 13 * RuntimeCompat.Clamp(TitleLabel.ActualWidth / Math.Max(1, text.WidthIncludingTrailingWhitespace), .65, 1);
         compactTitleInkWidth=Math.Min(TitleLabel.ActualWidth,text.WidthIncludingTrailingWhitespace*TitleLabel.FontSize/13);
     }
     private void AlignCompactTypography()
@@ -468,13 +468,13 @@ public partial class IslandWindow : Window
     private void ClampToScreen()
     {
         var hwnd = new WindowInteropHelper(this).Handle;
-        if (hwnd == 0 || !WindowsActivity.GetWindowRect(hwnd, out var rect)) return;
+        if (hwnd == IntPtr.Zero || !WindowsActivity.GetWindowRect(hwnd, out var rect)) return;
         var work = Forms.Screen.FromHandle(hwnd).WorkingArea;
         var dpi = VisualTreeHelper.GetDpi(this);
         MaxHeight = Math.Max(140, (work.Height - 16) / dpi.DpiScaleY);
         // Native coordinates avoid comparing DIPs with physical pixels across monitors.
-        var x = Math.Clamp(rect.Left, work.Left, Math.Max(work.Left, work.Right - (rect.Right - rect.Left)));
-        var y = Math.Clamp(rect.Top, work.Top, Math.Max(work.Top, work.Bottom - (rect.Bottom - rect.Top)));
+        var x = RuntimeCompat.Clamp(rect.Left, work.Left, Math.Max(work.Left, work.Right - (rect.Right - rect.Left)));
+        var y = RuntimeCompat.Clamp(rect.Top, work.Top, Math.Max(work.Top, work.Bottom - (rect.Bottom - rect.Top)));
         WindowsActivity.SetWindowPos(hwnd, 0, x, y, 0, 0, 0x0015);
     }
     private void LoadSettingsInputs()
@@ -491,8 +491,8 @@ public partial class IslandWindow : Window
     }
     private void SaveTrackingPreferences(double goalSeconds,double idle)
     {
-        if(!double.IsFinite(goalSeconds)||goalSeconds<=0||goalSeconds>24*3600
-            ||!double.IsFinite(idle)||idle<1||idle>3600)
+        if(!RuntimeCompat.IsFinite(goalSeconds)||goalSeconds<=0||goalSeconds>24*3600
+            ||!RuntimeCompat.IsFinite(idle)||idle<1||idle>3600)
         { ShowError("目标须为 0–24 小时（大于 0）；空闲阈值 1–3600 秒。"); return; }
         // Credit the last observation under the old threshold. A failed edit
         // must not discard that work or replace the paused/current decision.
@@ -574,7 +574,7 @@ public partial class IslandWindow : Window
         try
         {
             timer.Stop();
-            Check(IsVisible && new WindowInteropHelper(this).Handle != 0, "real HWND created");
+            Check(IsVisible && new WindowInteropHelper(this).Handle != IntPtr.Zero, "real HWND created");
             Check(!tray.Visible, "visible island has no duplicate recovery tray entry");
             Check(engine.Data.Settings.GoalSeconds == 14400, "default goal 4h");
             SaveImage(Path.Combine(output, "collapsed.png"));
@@ -633,7 +633,7 @@ public partial class IslandWindow : Window
             engine.Observe(DateTimeOffset.Now, WindowsActivity.Snapshot()); Persist(); Render();
             var snapshot = WindowsActivity.Snapshot();
             var report = new { passed = true, checks, foreground = snapshot.FrontmostApplicationIdentifier,
-                idleSeconds = double.IsFinite(snapshot.IdleSeconds) ? snapshot.IdleSeconds : -1,
+                idleSeconds = RuntimeCompat.IsFinite(snapshot.IdleSeconds) ? snapshot.IdleSeconds : -1,
                 dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip, monitors = Forms.Screen.AllScreens.Length,
                 persistedSeconds = engine.Data.Sessions.Sum(s => s.EffectiveSeconds), dataFile = store.Path,
                 nativeSmoke,
@@ -664,7 +664,7 @@ public partial class IslandWindow : Window
         {
             await Task.Delay(1000);
             input = WindowsActivity.Snapshot(); ObserveActivity(input); Persist(); Render();
-            samples.Add(new { second = i + 1, idleSeconds = double.IsFinite(input.IdleSeconds) ? input.IdleSeconds : -1,
+            samples.Add(new { second = i + 1, idleSeconds = RuntimeCompat.IsFinite(input.IdleSeconds) ? input.IdleSeconds : -1,
                 foreground = input.FrontmostApplicationIdentifier, state = engine.Current.State });
             if (input.IdleSeconds >= 30) break;
         }
@@ -698,7 +698,7 @@ public partial class IslandWindow : Window
             File.WriteAllText(Path.Combine(output, "restart-smoke.json"), JsonSerializer.Serialize(new { passed = true, loadedSeconds = baseline,
                 afterOfflineSimulationSeconds = engine.Data.Sessions.Sum(s => s.EffectiveSeconds), paused = engine.Data.Settings.Paused,
                 rules = engine.Data.Settings.Rules.Count, goalSeconds = engine.Data.Settings.GoalSeconds,
-                realWindowCreated = new WindowInteropHelper(this).Handle != 0, trayRegistered = tray.Visible }, AtomicStore.JsonOptions));
+                realWindowCreated = new WindowInteropHelper(this).Handle != IntPtr.Zero, trayRegistered = tray.Visible }, AtomicStore.JsonOptions));
             await Task.Delay(200); ExitIsland(null, new RoutedEventArgs());
         }
         catch (Exception error) { SmokeFailed = true; File.WriteAllText(Path.Combine(output, "restart-smoke-error.txt"), error.ToString()); exiting = true; Close(); }

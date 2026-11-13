@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Globalization;
 using System.Numerics;
 
@@ -16,7 +17,7 @@ internal static class DurationText
             var s=(long)seconds;
             return style=="hoursMinutes"?$"{s/3600}H {s/60%60:00}M":$"{s/60:00}M {s%60:00}S";
         }
-        if(!double.IsFinite(seconds))return "∞";
+        if(!RuntimeCompat.IsFinite(seconds))return "∞";
         var whole=new BigInteger(seconds);
         return style=="hoursMinutes"?$"{whole/3600}H {whole/60%60:00}M":$"{whole/60:00}M {whole%60:00}S";
     }
@@ -27,14 +28,14 @@ internal static class DurationText
         {
             var s=(long)seconds;return $"{s/3600:00}:{s/60%60:00}:{s%60:00}";
         }
-        if(!double.IsFinite(seconds))return "∞";
+        if(!RuntimeCompat.IsFinite(seconds))return "∞";
         var whole=new BigInteger(seconds);return $"{whole/3600:00}:{whole/60%60:00}:{whole%60:00}";
     }
     public static string WholeKey(double seconds)
     {
         seconds=Nonnegative(seconds);
         return seconds<(double)long.MaxValue?((long)seconds).ToString(CultureInfo.InvariantCulture)
-            :double.IsFinite(seconds)?new BigInteger(seconds).ToString(CultureInfo.InvariantCulture):"∞";
+            :RuntimeCompat.IsFinite(seconds)?new BigInteger(seconds).ToString(CultureInfo.InvariantCulture):"∞";
     }
     public static string Hours(double seconds)=>Component(seconds,3600,false);
     public static string Minutes(double seconds)=>Component(seconds,60,true);
@@ -45,7 +46,7 @@ internal static class DurationText
         {
             var value=(long)seconds/divisor;return (remainder?value%60:value).ToString(CultureInfo.InvariantCulture);
         }
-        if(!double.IsFinite(seconds))return "∞";
+        if(!RuntimeCompat.IsFinite(seconds))return "∞";
         var whole=new BigInteger(seconds)/divisor;
         return (remainder?whole%60:whole).ToString(CultureInfo.InvariantCulture);
     }

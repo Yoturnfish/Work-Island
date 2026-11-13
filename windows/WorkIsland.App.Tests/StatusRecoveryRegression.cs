@@ -89,6 +89,6 @@ internal static partial class Program
         {
             native.Dispose();var cleanup=latest;RecoveryNotifyIcon(2,ref cleanup);
         }
-        File.WriteAllText(Path.Combine(output,"status-recovery.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=(long)handle,fakeCalls=fake.Calls.Select(c=>new{message=c.Message,owner=(long)c.Data.Window,guid=c.Data.Guid,icon=(long)c.Data.Icon,tip=c.Data.Tip}),realAdds,scope="Controlled Shell return failures and simulated own TaskbarCreated handler; actual native icon creation/registration/removal for unique own GUID. No Explorer restart, physical icon click, other window or user data. Uses real delay for retry window; no fake clock."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"status-recovery.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=(long)handle,fakeCalls=fake.Calls.Select(c=>new{message=c.Message,owner=(long)c.Data.Window,guid=c.Data.Guid,icon=(long)c.Data.Icon,tip=c.Data.Tip}),realAdds,scope="Controlled Shell return failures and simulated own TaskbarCreated handler; actual native icon creation/registration/removal for unique own GUID. No Explorer restart, physical icon click, other window or user data. Uses real delay for retry window; no fake clock."},AtomicStore.JsonOptions));
     }
 }

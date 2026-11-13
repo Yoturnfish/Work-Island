@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System;
 using System.Collections.Generic;
 
@@ -63,7 +64,7 @@ internal sealed class NativeForegroundSurface:IDisposable
     }
     internal void Upload(BitmapSource bitmap,Size size)
     {
-        ObjectDisposedException.ThrowIf(disposed,this);
+        RuntimeCompat.ThrowIfDisposed(disposed,this);
         if(bitmap.Format!=PixelFormats.Pbgra32)throw new ArgumentException("Upload requires premultiplied BGRA pixels.",nameof(bitmap));
         if(surface==0)Initialize(bitmap,size);
         else if(pixelWidth!=bitmap.PixelWidth||pixelHeight!=bitmap.PixelHeight)
@@ -98,17 +99,17 @@ internal sealed class NativeForegroundSurface:IDisposable
     }
     internal void SetVisible(bool visible)
     {
-        ObjectDisposedException.ThrowIf(disposed,this);
+        RuntimeCompat.ThrowIfDisposed(disposed,this);
         // A Composition base-property write cancels that property's explicit
         // animation. The live opacity timeline itself makes this plane visible.
         if(visible&&opacityPulse is not null)return;
         try{if(!visible)StopPulses();}
         finally{if(imageVisual!=0)Hr(Fn<PutFloat>(imageVisual,23)(imageVisual,visible?1:0));}
     }
-    internal void PlaceOnTop(){ObjectDisposedException.ThrowIf(disposed,this);Hr(Fn<PutObject>(children,11)(children,imageVisual));Hr(Fn<PutObject>(children,9)(children,imageVisual));}
+    internal void PlaceOnTop(){RuntimeCompat.ThrowIfDisposed(disposed,this);Hr(Fn<PutObject>(children,11)(children,imageVisual));Hr(Fn<PutObject>(children,9)(children,imageVisual));}
     internal void BreatheScale(long epoch,double to,double period,System.Windows.Point center)
     {
-        ObjectDisposedException.ThrowIf(disposed,this);Hr(Fn<PutVector3>(imageVisual,13)(imageVisual,new((float)center.X,(float)center.Y,0)));
+        RuntimeCompat.ThrowIfDisposed(disposed,this);Hr(Fn<PutVector3>(imageVisual,13)(imageVisual,new((float)center.X,(float)center.Y,0)));
         if(scaleXPulse?.Attached==true&&scaleYPulse?.Attached==true&&scalePulseEpoch==epoch&&scaleTarget==to&&scalePeriod==period)return;
         try{StopPulse(ref scaleXPulse);}finally{StopPulse(ref scaleYPulse);}
         var phase=PulsePhase.At(epoch,period);
@@ -117,7 +118,7 @@ internal sealed class NativeForegroundSurface:IDisposable
     }
     internal void BreatheOpacity(long epoch,double from,double to,double period)
     {
-        ObjectDisposedException.ThrowIf(disposed,this);
+        RuntimeCompat.ThrowIfDisposed(disposed,this);
         if(opacityPulse?.Attached==true&&opacityPulseEpoch==epoch&&opacityFrom==from&&opacityTo==to&&opacityPeriod==period)return;
         StopPulse(ref opacityPulse);opacityPulse=new(compositor,imageVisual,"Opacity",from,to,period,PulsePhase.At(epoch,period));opacityPulseEpoch=epoch;opacityFrom=from;opacityTo=to;opacityPeriod=period;OpacityStarts++;
     }
@@ -147,9 +148,9 @@ internal sealed class NativeForegroundSurface:IDisposable
             if(pinned.IsAllocated)pinned.Free();pixels=[];surface=drawing=graphicsDevice=0;
         }
     }
-    private nint Query(nint pointer,string guid){var iid=new Guid(guid);Hr(Marshal.QueryInterface(pointer,in iid,out var result));references.Add(result);return result;}
+    private nint Query(nint pointer,string guid){var iid=new Guid(guid);Hr(RuntimeCompat.QueryInterface(pointer,iid,out var result));references.Add(result);return result;}
     private nint Create(nint pointer,int slot){Hr(Fn<CreateValue>(pointer,slot)(pointer,out var result));references.Add(result);return result;}
-    private static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*nint.Size));
+    private static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*IntPtr.Size));
     private static void Hr(int value)=>Marshal.ThrowExceptionForHR(value);
     [StructLayout(LayoutKind.Sequential)]private readonly record struct Vector(float X,float Y);
     [StructLayout(LayoutKind.Sequential)]private readonly record struct Vector3(float X,float Y,float Z);

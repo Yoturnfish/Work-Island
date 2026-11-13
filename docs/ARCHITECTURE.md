@@ -22,3 +22,5 @@ Mac 设置使用 UserDefaults，历史使用 SwiftData。Windows 数据位于 `%
 应用规则使用各平台自身的标识：Mac bundle ID 与 Windows 可执行文件标识分开维护。
 
 版本和发行标签按平台维护，例如 `macos-v0.8.28`、`windows-v0.1.24`。
+
+Windows 同一套产品源码支持 .NET Framework 4.8 和 .NET 10 双目标；默认发布轻量 Framework 版，由 RuntimeCompat 适配 API 差异。build-compat.ps1 构建轻量版，build.ps1 保留现代 .NET 构建路径。

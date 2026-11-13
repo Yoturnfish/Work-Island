@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
@@ -55,7 +56,7 @@ public partial class IslandWindow
         var now = Stopwatch.GetTimestamp();
         fullscreenClearSince ??= now;
         // Avoid flashing during resolution changes and short Alt+Tab transitions.
-        if (Stopwatch.GetElapsedTime(fullscreenClearSince.Value, now).TotalSeconds < 1) return;
+        if (RuntimeCompat.GetElapsedTime(fullscreenClearSince.Value, now).TotalSeconds < 1) return;
         fullscreenSuppressed = false; fullscreenClearSince = null;
         var restore = restoreAfterFullscreen; restoreAfterFullscreen = false;
         Topmost = engine.Data.Settings.Topmost;

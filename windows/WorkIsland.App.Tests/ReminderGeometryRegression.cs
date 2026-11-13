@@ -40,7 +40,7 @@ internal static partial class Program
             var errors=new List<double>();
             foreach(var x in new[]{.08,.18,.34,.5,.66,.82,.92})foreach(var y in new[]{.35,.5,.65})
             {
-                var px=Math.Clamp((int)(x*width),0,width-1);var py=Math.Clamp((int)(y*height),0,height-1);
+                var px=RuntimeCompat.Clamp((int)(x*width),0,width-1);var py=RuntimeCompat.Clamp((int)(y*height),0,height-1);
                 var actual=bytes[(py*width+px)*4+3]/255d;
                 errors.Add(Math.Abs(actual-Expected((px+.5)/width,(py+.5)/height,strength)));
             }

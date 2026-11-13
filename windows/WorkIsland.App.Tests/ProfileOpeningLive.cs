@@ -29,7 +29,7 @@ internal static partial class Program
         void Write(string name,object value)=>File.WriteAllText(Path.Combine(output,name),JsonSerializer.Serialize(value,AtomicStore.JsonOptions));
         engine.Data.Settings.Paused=true;engine.Data.Settings.Rules=[];engine.Data.Settings.ReduceMotion=true;engine.Data.Settings.BackgroundStyle="black";
         engine.ResetObservation();Field<DispatcherTimer>("fullscreenTimer").Stop();Field<DispatcherTimer>("focusReturn").Stop();
-        window.Title="Work Island · 组合右键实测 · "+Environment.ProcessId;window.ShowInTaskbar=true;window.Topmost=false;window.Left=460;window.Top=300;
+        window.Title="Work Island · 组合右键实测 · "+RuntimeCompat.ProcessId;window.ShowInTaskbar=true;window.Topmost=false;window.Left=460;window.Top=300;
         Call("ToggleExpanded",null,new RoutedEventArgs());Call("OpenRecognition",window,new RoutedEventArgs());await Task.Delay(150);window.UpdateLayout();Call("Persist");
         var bytes=File.ReadAllBytes(store.Path);var memory=JsonSerializer.Serialize(engine.Data,AtomicStore.JsonOptions);
         RoutedEventHandler click=(_,_)=>{if(color.ContextMenu?.IsOpen==true)normalOpens++;};
@@ -54,11 +54,11 @@ internal static partial class Program
         color.AddHandler(Button.ClickEvent,click,true);color.AddHandler(ContextMenuService.ContextMenuOpeningEvent,opening,true);
         try
         {
-            Write("ready.json",new{processId=Environment.ProcessId,startedUtcTicks=Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks.ToString(),windowHandle=new WindowInteropHelper(window).Handle.ToInt64(),window.Title,scope="Await official actual normal color click, Escape, then arm marker. Own controlled fullscreen source; no real game."});
+            Write("ready.json",new{processId=RuntimeCompat.ProcessId,startedUtcTicks=Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks.ToString(),windowHandle=new WindowInteropHelper(window).Handle.ToInt64(),window.Title,scope="Await official actual normal color click, Escape, then arm marker. Own controlled fullscreen source; no real game."});
             await WaitFile("arm-context.txt",180);
             check("official normal left click created a retained menu and Escape closed it",normalOpens==1&&color.ContextMenu is not null&&!color.ContextMenu.IsOpen,new{normalOpens,menuOpen=color.ContextMenu?.IsOpen});
             armed=true;source.Active=true;
-            Write("armed.json",new{processId=Environment.ProcessId,ownerVisible=window.IsVisible,pollStopped=!Field<DispatcherTimer>("fullscreenTimer").IsEnabled});
+            Write("armed.json",new{processId=RuntimeCompat.ProcessId,ownerVisible=window.IsVisible,pollStopped=!Field<DispatcherTimer>("fullscreenTimer").IsEnabled});
             await done.Task.WaitAsync(TimeSpan.FromSeconds(90));
             check("actual native context request preserves paused rules profiles and raw bytes",JsonSerializer.Serialize(engine.Data,AtomicStore.JsonOptions)==memory&&File.ReadAllBytes(store.Path).AsSpan().SequenceEqual(bytes),null);
             await WaitFile("finish.txt",90);

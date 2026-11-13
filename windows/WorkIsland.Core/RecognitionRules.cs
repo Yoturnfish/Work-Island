@@ -27,7 +27,7 @@ public static class RecognitionRules
     {
         // Match the reference Mac registrableKeyword heuristic for new captures.
         // Existing explicit-host/manual rules are never converted or broadened.
-        if(string.IsNullOrWhiteSpace(address)||!address.Contains("://",StringComparison.Ordinal)
+        if(address is null||string.IsNullOrWhiteSpace(address)||!address.Contains("://",StringComparison.Ordinal)
             ||!TryAddress(address,out var uri)||uri!.HostNameType!=UriHostNameType.Dns)return null;
         var parts=uri.IdnHost.ToLowerInvariant().Split('.',StringSplitOptions.RemoveEmptyEntries);
         if(parts.Length<2)return null;
@@ -41,7 +41,7 @@ public static class RecognitionRules
     public static bool TryAddress(string? value, out Uri? uri)
     {
         uri=null;
-        if(string.IsNullOrWhiteSpace(value) || value.Any(char.IsControl))return false;
+        if(value is null || string.IsNullOrWhiteSpace(value) || value.Any(char.IsControl))return false;
         var address=value.Contains("://",StringComparison.Ordinal)?value:"https://"+value;
         if(!Uri.TryCreate(address,UriKind.Absolute,out var parsed) || parsed.Scheme is not ("http" or "https")
             || string.IsNullOrEmpty(parsed.Host) || (!parsed.Host.Contains('.') && parsed.Host!="localhost"))return false;

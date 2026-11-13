@@ -24,7 +24,7 @@ internal static partial class Program
         var engine=Field<TrackingEngine>("engine");var settings=engine.Data.Settings;
         settings.Paused=true;settings.ReduceMotion=true;Field<DispatcherTimer>("fullscreenTimer").Stop();Field<DispatcherTimer>("focusReturn").Stop();
         window.Left=360;window.Top=220;window.Topmost=true;window.Activate();
-        if(review){window.ShowInTaskbar=true;window.Title="Work Island · 命名输入对齐验收 · "+Environment.ProcessId;}
+        if(review){window.ShowInTaskbar=true;window.Title="Work Island · 命名输入对齐验收 · "+RuntimeCompat.ProcessId;}
         Call("ActivateProfile",settings.ColorProfiles.Single(p=>p.IsDefault).Id);Call("RenameCurrentProfile","");
         Call("ToggleExpanded",null,new RoutedEventArgs());Call("OpenRecognition",window,new RoutedEventArgs());Call("OpenProfilePopover");await Task.Delay(150);
         var menu=Field<Button>("RecognitionColorButton").ContextMenu!;var panel=(StackPanel)((MenuItem)menu.Items[0]).Header;var palette=panel.Children.OfType<UniformGrid>().Single();var name=ProfileNameEditor(panel);
@@ -52,7 +52,7 @@ internal static partial class Program
             {
                 void RecordInput(string action)=>File.AppendAllText(Path.Combine(output,"actual-editor-input.jsonl"),JsonSerializer.Serialize(new{action,at=DateTimeOffset.Now,text=name.Text,caret=name.CaretIndex,selection=name.SelectionLength,focus=name.IsKeyboardFocusWithin,rect=name.GetRectFromCharacterIndex(name.CaretIndex,false).ToString()},AtomicStore.JsonOptions)+Environment.NewLine);
                 name.PreviewMouseUp+=(_,_)=>name.Dispatcher.BeginInvoke(()=>RecordInput("mouse-up"));name.PreviewKeyUp+=(_,_)=>RecordInput("key-up");
-                File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=Environment.ProcessId,title=window.Title,scope="Own isolated profile popup, empty cyan naming field. Official click and typing review; no daily state."},AtomicStore.JsonOptions));
+                File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=RuntimeCompat.ProcessId,title=window.Title,scope="Own isolated profile popup, empty cyan naming field. Official click and typing review; no daily state."},AtomicStore.JsonOptions));
                 var watch=System.Diagnostics.Stopwatch.StartNew();while(watch.Elapsed.TotalSeconds<180&&!File.Exists(Path.Combine(output,"finish-review.txt")))await Task.Delay(100);
             }
             name.Text="剪辑工作";name.CaretIndex=0;await Task.Delay(80);var first=name.GetRectFromCharacterIndex(0,false);

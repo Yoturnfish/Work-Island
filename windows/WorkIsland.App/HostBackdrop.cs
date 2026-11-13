@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Runtime.InteropServices;
 
 namespace WorkIsland.App;
@@ -42,7 +43,7 @@ internal sealed class HostBackdrop : IDisposable
         }
         catch { Dispose(); throw; }
     }
-    public void SetBlend(double value) => Marshal.ThrowExceptionForHR(Function<PutFloat>(visual, 23)(visual, (float)Math.Clamp(value, 0, 1)));
+    public void SetBlend(double value) => Marshal.ThrowExceptionForHR(Function<PutFloat>(visual, 23)(visual, (float)RuntimeCompat.Clamp(value, 0, 1)));
     public void Resize(int width, int height) => Marshal.ThrowExceptionForHR(Function<PutVector>(visual, 36)(visual, new Vector { X = width, Y = height }));
     // One queue per UI thread, shared by the backdrop and native progress target.
     // Controllers live for the dispatcher lifetime, rather than individual HWNDs.
@@ -53,9 +54,9 @@ internal sealed class HostBackdrop : IDisposable
     }
     private nint Query(nint pointer, string guid)
     {
-        var iid = new Guid(guid); Marshal.ThrowExceptionForHR(Marshal.QueryInterface(pointer, in iid, out var result)); references.Add(result); return result;
+        var iid = new Guid(guid); Marshal.ThrowExceptionForHR(RuntimeCompat.QueryInterface(pointer,iid, out var result)); references.Add(result); return result;
     }
-    private static T Function<T>(nint pointer, int slot) where T : Delegate => Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer), slot * nint.Size));
+    private static T Function<T>(nint pointer, int slot) where T : Delegate => Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer), slot * IntPtr.Size));
     public void Dispose()
     {
         if (target != 0) { Function<PutObject>(target, 7)(target, 0); target = 0; }

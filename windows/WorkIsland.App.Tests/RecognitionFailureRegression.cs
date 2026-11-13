@@ -99,7 +99,7 @@ internal static partial class Program
             source.ApplicationFailure=source.BrowserFailure=null;source.DelayMilliseconds=source.BrowserDelayMilliseconds=0;
             await Close();engine.Data.Settings=JsonSerializer.Deserialize<Settings>(saved,AtomicStore.JsonOptions)!;
             Call("RebuildRules");Call("ApplyLanguage");Call("Render");Call("CollapseToTimer");
-            File.WriteAllText(Path.Combine(output,"recognition-failure.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),records,scope="Actual owned WPF popup, injected application IOException / browser COMException and bounded 1200ms delays, public source interface. Real layout/full-text metrics and own-popup screen capture; no external UI input, real browser/OS permission or user data."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"recognition-failure.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),records,scope="Actual owned WPF popup, injected application IOException / browser COMException and bounded 1200ms delays, public source interface. Real layout/full-text metrics and own-popup screen capture; no external UI input, real browser/OS permission or user data."},AtomicStore.JsonOptions));
         }
     }
 }

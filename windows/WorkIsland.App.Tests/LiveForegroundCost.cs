@@ -22,7 +22,7 @@ internal static partial class Program
         {
             settings.Paused=state=="paused";engine.ResetObservation();engine.Observe(DateTimeOffset.Now,new(state=="tracking"?"cost.exe":"other.exe","Cost",0));Call("Render");
             if(state=="away"){typeof(IslandWindow).GetField("awaySince",Flags)!.SetValue(window,(DateTimeOffset?)DateTimeOffset.Now.AddSeconds(-11));Call("Render");}
-            await Task.Delay(700);process.Refresh();var before=process.TotalProcessorTime.TotalSeconds;var at=Stopwatch.GetTimestamp();await Task.Delay(6000);process.Refresh();var seconds=Stopwatch.GetElapsedTime(at).TotalSeconds;var single=100*(process.TotalProcessorTime.TotalSeconds-before)/seconds;
+            await Task.Delay(700);process.Refresh();var before=process.TotalProcessorTime.TotalSeconds;var at=Stopwatch.GetTimestamp();await Task.Delay(6000);process.Refresh();var seconds=RuntimeCompat.GetElapsedTime(at).TotalSeconds;var single=100*(process.TotalProcessorTime.TotalSeconds-before)/seconds;
             rows.Add(new{state,seconds,singleCoreCpuPercent=single,machineEquivalentCpuPercent=single/Environment.ProcessorCount,captures=Field<int>("nativeForegroundCaptures"),renderMode=(System.Windows.PresentationSource.FromVisual(window) as System.Windows.Interop.HwndSource)?.CompositionTarget.RenderMode.ToString()});
             check("live "+state+" keeps bounded process CPU without full-window captures",single<15&&Field<int>("nativeForegroundCaptures")==0,rows[^1]);
         }

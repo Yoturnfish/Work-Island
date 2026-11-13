@@ -45,9 +45,9 @@ internal static partial class Program
         var folder=Path.Combine(output,"native-fullscreen-fixture");Directory.CreateDirectory(folder);
         var command=Path.Combine(folder,"probe-command.txt");var ready=Path.Combine(folder,"probe-ready.txt");
         File.WriteAllText(command,"normal");
-        var info=new ProcessStartInfo(Environment.ProcessPath!){UseShellExecute=false,CreateNoWindow=true};
-        if(string.Equals(Path.GetFileNameWithoutExtension(Environment.ProcessPath),"dotnet",StringComparison.OrdinalIgnoreCase))info.ArgumentList.Add(Assembly.GetExecutingAssembly().Location);
-        info.ArgumentList.Add("--fullscreen-native-probe");info.ArgumentList.Add(folder);
+        var info=new ProcessStartInfo(RuntimeCompat.ProcessPath!){UseShellExecute=false,CreateNoWindow=true};
+        if(string.Equals(Path.GetFileNameWithoutExtension(RuntimeCompat.ProcessPath),"dotnet",StringComparison.OrdinalIgnoreCase))TestRuntime.AddArgument(info,Assembly.GetExecutingAssembly().Location);
+        TestRuntime.AddArgument(info,"--fullscreen-native-probe");TestRuntime.AddArgument(info,folder);
         using var process=Process.Start(info)!;
         async Task<bool> Mode(string value)
         {

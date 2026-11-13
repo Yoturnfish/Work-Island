@@ -19,11 +19,11 @@ internal static partial class Program
         progress.Update(.5,"tracking","matrix",Field<SolidColorBrush>("statusBrush"),false,30);
         var nativeField=typeof(PixelProgress).GetField("nativeScan",Flags)!;var native=nativeField.GetValue(progress)??throw new InvalidOperationException("Native scan unavailable");
         var brushes=(List<nint>)native.GetType().GetField("brushes",Flags)!.GetValue(native)!;var iid=new Guid("0bb3784c-346b-4a7c-966b-7310966553d5");
-        Marshal.ThrowExceptionForHR(Marshal.QueryInterface(brushes[0],in iid,out var observer));
+        Marshal.ThrowExceptionForHR(RuntimeCompat.QueryInterface(brushes[0],iid,out var observer));
         const string property="Offset.X";Marshal.ThrowExceptionForHR(DisposalCreateString(property,property.Length,out var name));
         try
         {
-            var get=Marshal.GetDelegateForFunctionPointer<DisposalController>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(observer),6*nint.Size));
+            var get=Marshal.GetDelegateForFunctionPointer<DisposalController>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(observer),6*IntPtr.Size));
             Marshal.ThrowExceptionForHR(get(observer,name,out var before));check("native disposal fixture has a real running animation controller",before!=0,null);if(before!=0)Marshal.Release(before);
             // Retain only a read-only brush observer outside the component. Its
             // animation must be explicitly stopped when the component disposes.

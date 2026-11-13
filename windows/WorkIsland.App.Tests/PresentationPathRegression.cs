@@ -23,7 +23,7 @@ internal static partial class Program
         var engine=Field<TrackingEngine>("engine");var settings=engine.Data.Settings;
         Field<DispatcherTimer>("timer").Stop();Field<DispatcherTimer>("fullscreenTimer").Stop();
         settings.Rules=[new("path-fixture.exe","Path fixture")];settings.ReduceMotion=false;settings.BackgroundStyle="black";settings.BackgroundOpacity=1;settings.Paused=false;
-        window.Left=340;window.Top=240;window.Topmost=true;window.ShowInTaskbar=true;window.Title="Work Island · 正式绘制路径验收 · "+Environment.ProcessId;
+        window.Left=340;window.Top=240;window.Topmost=true;window.ShowInTaskbar=true;window.Title="Work Island · 正式绘制路径验收 · "+RuntimeCompat.ProcessId;
         var guard=new Window{Title="Work Island owned transition background",WindowStyle=WindowStyle.None,ShowActivated=false,ShowInTaskbar=false,Left=300,Top=200,Width=600,Height=260,Background=System.Windows.Media.Brushes.White};guard.Show();
         void State(bool working){engine.ResetObservation();engine.Observe(DateTimeOffset.Now,new(working?"path-fixture.exe":"other.exe","Fixture",0));Call("Render");}
         bool NativeInstalled()=>Field<object>("statusItem").GetType().GetProperty("Installed")!.GetValue(Field<object>("statusItem")) is true;

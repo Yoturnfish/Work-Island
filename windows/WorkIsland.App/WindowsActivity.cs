@@ -48,7 +48,7 @@ public static class WindowsActivity
         if(inputSource is null)return;
         inputSource.RemoveHook(Input);inputSource=null;
         RegisterRawInputDevices([new(){Page=1,Usage=2,Flags=1},new(){Page=1,Usage=6,Flags=1}],2,(uint)Marshal.SizeOf<RawDevice>());
-        pointerAt=null;keyboardAt=0;pointerWindow=0;lastPointerPosition=null;pointerLocation=null;pointerWindowNeedsRefresh=false;Array.Clear(inputPacket);browser.Clear();
+        pointerAt=null;keyboardAt=0;pointerWindow=0;lastPointerPosition=null;pointerLocation=null;pointerWindowNeedsRefresh=false;Array.Clear(inputPacket,0,inputPacket.Length);browser.Clear();
     }
     private static nint Input(nint hwnd,int message,nint wParam,nint lParam,ref bool handled)
     {
@@ -71,7 +71,7 @@ public static class WindowsActivity
             var activity=RecordRawActivity(header.Type,inputPacket,(int)headerSize,(int)(read-headerSize),absoluteMoved,0,Stopwatch.GetTimestamp());
             if(activity==RawActivity.Pointer){pointerLocation=position;pointerWindowNeedsRefresh=true;}
         }
-        finally{Array.Clear(inputPacket);}
+        finally{Array.Clear(inputPacket,0,inputPacket.Length);}
         return 0;
     }
     private static RawActivity RecordRawActivity(uint type,byte[] packet,int offset,int length,bool absoluteMoved,nint target,long timestamp)
@@ -108,7 +108,7 @@ public static class WindowsActivity
     {
         var last = new LastInput { Size = (uint)Marshal.SizeOf<LastInput>() };
         var idle = GetLastInputInfo(ref last) ? unchecked((uint)Environment.TickCount - last.Time) / 1000.0 : double.PositiveInfinity;
-        readWebsites=readWebsites&&double.IsFinite(idle)&&idle<awayThreshold;
+        readWebsites=readWebsites&&RuntimeCompat.IsFinite(idle)&&idle<awayThreshold;
         var foreground=GetForegroundWindow();var effective=EffectiveWindow;
         var front=Application(foreground);var pointer=Application(effective);
         var usesPointer=pointerAt is long time && time>=keyboardAt;

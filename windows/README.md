@@ -1,48 +1,41 @@
 # Work Island Windows 0.1.24
 
-Windows 11 x64 实测的 WPF/.NET 应用：屏幕工作计时、应用/可选网站规则、逻辑日与历史、主题组合、悬浮窗和任务栏通知区域模式。当前前景使用实时绘制，避免整窗缓存交接；悬停不改变手动透明度。
+Work Island 的 Windows 实现。当前版本保持 0.1.24 / 0.1.24.25，使用 WPF；计时、识别规则、逻辑日、历史记录、主题组合、透明模式、悬浮窗及任务栏通知区域状态图标共用现有实现。
 
-## 当前下载包
+## 轻量兼容版
 
-Release 的 Windows 附件已换为 `20261113-net48-r2` 轻量兼容版，使用系统提供的 .NET Framework 4.8，不再捆绑 .NET Desktop Runtime。安装器约 3.34 MB，免安装 ZIP 约 0.77 MB。产品版本仍为 0.1.24 / 文件版本 0.1.24.25。
-
-免安装版解压后运行 `Start-Portable.cmd`，记录保存在旁边的 `Data`；直接运行 `WorkIsland.exe` 使用 `%LOCALAPPDATA%/WorkIsland`。升级前正常退出旧版并备份数据。
-
-当前仓库保留原 .NET 10 源码；兼容版源码及其 `build-compat.ps1` 待收到后同步。下列构建命令针对现有 .NET 10 源码。
-
-## 构建
-
-需要 Windows、PowerShell 7 和 .NET SDK 10.0.401（或 global.json 允许的补丁）。项目不含远程 NuGet 包依赖。
-在本目录执行：
+当前源码支持 .NET Framework 4.8 和 .NET 10 双目标。推荐用户下载轻量版：使用标准 Windows 10 1903+、Windows 11 x64 自带的 .NET Framework，不要求用户另装 .NET 10。开发者构建需要 Windows、PowerShell 7、.NET SDK 10.0.401（或 global.json 允许的补丁），首次还原需要访问 NuGet。
 
 ```powershell
-./build.ps1 -BuildId local-review
+./build-compat.ps1 -BuildId local-net48
 ```
 
-也可用 `-SdkPath` 指定包含 dotnet.exe 的 SDK 安装根目录。脚本构建并执行核心及桌面回归，再生成带本地运行时的独立目录；`-SkipWindowTests` 只适用于无交互桌面环境，不能视为完整桌面验收。
+默认执行核心与窗口检查。没有交互桌面时可用 `-SkipWindowTests`；这不能替代完整桌面验收。可用 `-SdkPath` 指定 SDK 根目录，`-PackageSource` 指定包源。输出写入本仓库的 artifacts 和 test-results，保留既有同名产物。`build.cmd` 调用轻量构建脚本。原 .NET 10 完整版使用 build.ps1。
 
-快速编译与核心测试：
+快速编译和核心检查：
 
 ```powershell
-dotnet build WorkIsland.App.Tests/WorkIsland.App.Tests.csproj -c Release
-dotnet run --project WorkIsland.Tests/WorkIsland.Tests.csproj -c Release -- --output test-results/core.json
+dotnet restore WorkIsland.Tests/WorkIsland.Tests.csproj
+dotnet build WorkIsland.Tests/WorkIsland.Tests.csproj -c Release -f net48 --no-restore
+./WorkIsland.Tests/bin/Release/net48/WorkIsland.Tests.exe --output test-results/core.json
 ```
 
-WPF、托盘和 Win32 行为需在 Windows 交互会话验证；Mac 上可审阅全部源码，安装相应 .NET SDK 后可运行纯 Core 项目测试。
+## 安装器
 
-## 安装包
-
-使用官方 Inno Setup 编译器；在 `build.ps1` 输出的干净目录上运行：
+需另外安装 Inno Setup 7.1.0。构建后选择无用户数据的冻结发布目录，运行：
 
 ```powershell
-./Installer/build-installer.ps1 -Compiler 'C:/path/to/ISCC.exe' -PayloadDir 'artifacts/WorkIsland-0.1.24-win-x64-build-local-review' -PackageName 'WorkIsland-0.1.24-win-x64-local-review-setup'
+./Installer/build-installer.ps1 -BuiltinFramework -Compiler 'C:/path/to/ISCC.exe' -PayloadDir 'artifacts/WorkIsland-0.1.24-win-x64-build-local-net48' -PackageName WorkIsland-local-setup
 ```
 
-安装脚本当前用户安装、升级保留设置和历史，卸载保留数据。安装器拒绝把 Data、PreviewData 或本机测试数据一起打包。安装包目前没有代码签名证书。
+安装器按当前用户安装，检查 Framework 4.8，保留工作记录，拒绝覆盖仍运行的程序并支持失败回滚。便携入口 Start-Portable.cmd 将数据写入旁边的 Data；直接运行 exe 使用当前用户的 LocalAppData/WorkIsland。
 
-## 数据与测试边界
+## 与 Mac 工程合并
 
-普通数据目录是 `%LOCALAPPDATA%/WorkIsland`；测试、预览必须明确传入独立 `--data-dir`，不要用日常数据目录。查询与正常退出接口是 `--query-instance` 和 `--request-exit`，退出前核对 PID、启动时间与数据目录；不要强杀未知进程。
+这是 Windows 源码，不包含 Mac 现行工程。可将本目录作为 windows 子目录合并，保持内部目录结构；请保留 Mac 端当前源码及版本，不用历史快照覆盖。共享判定夹具位于仓库根目录的 Specs/activity-decision-cases.json。Windows 编译和桌面验收仍应在 Windows 进行。
 
-共享活动判定样例位于仓库根目录的 `Specs/`。`WorkIsland.App` / `WorkIsland.Core` 保留 Windows 交接版本的产品代码。
-专用历史诊断工具位于 Tools，其显式实验入口不代表正式启动策略；可通过 ProductDirectory 参数选择已构建程序集。
+## 验证与许可
+
+现有发布二进制通过 149 核心、414 窗口、57 菜单、22 导航画面、4 短时资源及 12 隔离安装检查；本机 Windows 11 实测，干净 Windows 10/11 虚拟机矩阵、长时间及多屏等未在这轮补测。本次源码导出已重新编译 Framework 与 .NET 10 两种目标，并执行 Framework 核心检查。
+
+MIT License · Yoturn，见 LICENSE。微软 NuGet 库及第三方许可说明见 MICROSOFT-LIBRARIES-LICENSE.txt、NOTICE.md。系统字体不随包分发。

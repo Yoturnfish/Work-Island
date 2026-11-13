@@ -60,12 +60,11 @@ swift run FocusIsland
 sh scripts/package_app.sh
 ```
 
-仓库现有 Windows 源码构建原 .NET 10 版本；.NET Framework 4.8 兼容版源码及构建脚本待同步。
-构建现有源码需要 PowerShell 7 和 .NET SDK 10.0.401（允许同系列更新补丁）：
+Windows 源码支持 .NET Framework 4.8 和 .NET 10 双目标。构建需要 Windows、PowerShell 7 和 .NET SDK 10.0.401（允许同系列更新补丁），首次还原需访问 NuGet。轻量版构建命令：
 
 ```powershell
 cd windows
-./build.ps1 -BuildId local
+./build-compat.ps1 -BuildId local-net48
 ```
 
 Windows 详细构建与安装说明见 [windows/README.md](windows/README.md)，工程结构见 [架构说明](docs/ARCHITECTURE.md)。

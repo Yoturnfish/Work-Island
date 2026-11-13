@@ -4,7 +4,7 @@ public static class ReminderTiming
 {
     public static double Frequency(double elapsed, double threshold)
     {
-        if (!double.IsFinite(elapsed) || !double.IsFinite(threshold) || threshold <= 0 || elapsed < threshold) return 0;
+        if (!RuntimeCompat.IsFinite(elapsed) || !RuntimeCompat.IsFinite(threshold) || threshold <= 0 || elapsed < threshold) return 0;
         return Math.Min(1.5, Math.Pow(2, Math.Min(1023, Math.Floor(elapsed / threshold))) / threshold);
     }
     public static double Intensity(double elapsed, double threshold)

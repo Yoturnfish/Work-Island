@@ -62,7 +62,7 @@ internal static partial class Program
             Capture(popup,"keyword-before-input-2x.png");
             if(live)
             {
-                File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=Environment.ProcessId,window.Title,scope="Two controlled browser addresses from different subdomains; two legacy rules retained. Official mouse input only after ready, not external browser URL acquisition."},AtomicStore.JsonOptions));
+                File.WriteAllText(Path.Combine(output,"ready.json"),JsonSerializer.Serialize(new{pid=RuntimeCompat.ProcessId,window.Title,scope="Two controlled browser addresses from different subdomains; two legacy rules retained. Official mouse input only after ready, not external browser URL acquisition."},AtomicStore.JsonOptions));
                 for(var stage=1;stage<=2;stage++)
                 {
                     var watch=Stopwatch.StartNew();var marker=Path.Combine(output,$"stage-{stage}.txt");while(!File.Exists(marker)&&watch.Elapsed.TotalSeconds<120)await Task.Delay(100);

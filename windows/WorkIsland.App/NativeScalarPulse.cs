@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -5,7 +6,7 @@ namespace WorkIsland.App;
 
 internal static class PulsePhase
 {
-    internal static double At(long epoch,double period)=>(Stopwatch.GetElapsedTime(epoch).TotalSeconds/period)%1;
+    internal static double At(long epoch,double period)=>(RuntimeCompat.GetElapsedTime(epoch).TotalSeconds/period)%1;
     internal static double Value(double phase,double from,double to)=>from+(to-from)*(.5-.5*Math.Cos(phase*2*Math.PI));
 }
 
@@ -23,7 +24,7 @@ internal sealed class NativeScalarPulse:IDisposable
         get
         {
             if(disposed||!started)return false;
-            var id=new Guid("0bb3784c-346b-4a7c-966b-7310966553d5");Hr(Marshal.QueryInterface(composition,in id,out var source));
+            var id=new Guid("0bb3784c-346b-4a7c-966b-7310966553d5");Hr(RuntimeCompat.QueryInterface(composition,id,out var source));
             try{Hr(Fn<GetController>(source,6)(source,property,out var current));if(current==0)return false;Marshal.Release(current);return true;}
             finally{Marshal.Release(source);}
         }
@@ -41,7 +42,7 @@ internal sealed class NativeScalarPulse:IDisposable
             Hr(Fn<PutLong>(key,9)(key,TimeSpan.FromSeconds(period).Ticks));Hr(Fn<PutInt>(key,11)(key,1));
             var animation=Query(scalar,"464c4c2c-1caa-4061-9b40-e13fde1503ca");Hr(Fn<Start>(composition,9)(composition,property,animation));started=true;
             var source=Query(composition,"0bb3784c-346b-4a7c-966b-7310966553d5");Hr(Fn<GetController>(source,6)(source,property,out var controller));if(controller==0)throw new InvalidOperationException("No scalar pulse controller.");references.Add(controller);
-            Hr(Fn<Clear>(controller,12)(controller));Hr(Fn<PutFloat>(controller,9)(controller,(float)Math.Clamp(phase,0,1)));Hr(Fn<Clear>(controller,13)(controller));
+            Hr(Fn<Clear>(controller,12)(controller));Hr(Fn<PutFloat>(controller,9)(controller,(float)RuntimeCompat.Clamp(phase,0,1)));Hr(Fn<Clear>(controller,13)(controller));
         }
         catch{Dispose();throw;}
     }
@@ -53,7 +54,7 @@ internal sealed class NativeScalarPulse:IDisposable
             if(started)
             {
                 Hr(Fn<Stop>(composition,10)(composition,property));started=false;
-                var id=new Guid("0bb3784c-346b-4a7c-966b-7310966553d5");Hr(Marshal.QueryInterface(composition,in id,out var source));
+                var id=new Guid("0bb3784c-346b-4a7c-966b-7310966553d5");Hr(RuntimeCompat.QueryInterface(composition,id,out var source));
                 try{Hr(Fn<GetController>(source,6)(source,property,out var remaining));ControllerAttachedAfterStop=remaining!=0;if(remaining!=0)Marshal.Release(remaining);}
                 finally{Marshal.Release(source);}
             }
@@ -64,8 +65,8 @@ internal sealed class NativeScalarPulse:IDisposable
             if(property!=0){WindowsDeleteString(property);property=0;}composition=0;
         }
     }
-    private nint Query(nint pointer,string name){var id=new Guid(name);Hr(Marshal.QueryInterface(pointer,in id,out var result));references.Add(result);return result;}
-    private static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*nint.Size));
+    private nint Query(nint pointer,string name){var id=new Guid(name);Hr(RuntimeCompat.QueryInterface(pointer,id,out var result));references.Add(result);return result;}
+    private static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*IntPtr.Size));
     private static void Hr(int value)=>Marshal.ThrowExceptionForHR(value);
     [DllImport("combase.dll",CharSet=CharSet.Unicode)]private static extern int WindowsCreateString(string text,int length,out nint value);
     [DllImport("combase.dll")]private static extern int WindowsDeleteString(nint value);

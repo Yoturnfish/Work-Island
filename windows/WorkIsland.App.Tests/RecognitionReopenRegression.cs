@@ -75,7 +75,7 @@ internal static partial class Program
             source.DelayMilliseconds=source.BrowserDelayMilliseconds=0;Call("CloseRecognitionPicker");await Task.Delay(240);
             engine.Data.Settings=JsonSerializer.Deserialize<Settings>(saved,AtomicStore.JsonOptions)!;
             Call("RebuildRules");Call("Render");Call("CollapseToTimer");
-            File.WriteAllText(Path.Combine(output,"recognition-reopen.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),traces,scope="Actual owned WPF Popup fade, async application and browser discovery with 300ms synthetic source delays, real product Open/Close methods. No external UI input, real browser, daily data or OS setting. Callback ordering observed without synthetic Closed event injection."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"recognition-reopen.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),traces,scope="Actual owned WPF Popup fade, async application and browser discovery with 300ms synthetic source delays, real product Open/Close methods. No external UI input, real browser, daily data or OS setting. Callback ordering observed without synthetic Closed event injection."},AtomicStore.JsonOptions));
         }
     }
 }

@@ -29,7 +29,7 @@ internal static partial class Program
         void Close(){Track();foreach(var menu in menus)menu.IsOpen=false;Field<DispatcherTimer>("focusReturn").Stop();}
         void ContextRequest()
         {
-            var args=(ContextMenuEventArgs)RuntimeHelpers.GetUninitializedObject(typeof(ContextMenuEventArgs));
+            var args=(ContextMenuEventArgs)TestRuntime.GetUninitializedObject(typeof(ContextMenuEventArgs));
             args.RoutedEvent=ContextMenuService.ContextMenuOpeningEvent;args.Source=color;color.RaiseEvent(args);
             // Model only the service's default step after its real routed event.
             // Native right-click verification is separate from this fixture.

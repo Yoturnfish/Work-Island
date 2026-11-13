@@ -97,6 +97,6 @@ internal static partial class Program
             }
             finally{Close(window);}
         }
-        File.WriteAllText(Path.Combine(output,"startup-failure.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),snapshots,scope="Own actual IslandWindow controls with injected startup provider exceptions, partial/ignored writes and readable recovery. No Windows Run key writes, ACL changes, native input or real login acceptance."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"startup-failure.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),snapshots,scope="Own actual IslandWindow controls with injected startup provider exceptions, partial/ignored writes and readable recovery. No Windows Run key writes, ACL changes, native input or real login acceptance."},AtomicStore.JsonOptions));
     }
 }

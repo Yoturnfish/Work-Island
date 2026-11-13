@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
@@ -136,7 +137,7 @@ public partial class IslandWindow
     internal void MoveOnboarding(int direction)
     {
         if(!OnboardingActive)return;
-        var next=Math.Clamp(onboardingStep+direction,0,4);if(next==onboardingStep)return;
+        var next=RuntimeCompat.Clamp(onboardingStep+direction,0,4);if(next==onboardingStep)return;
         CloseRecognitionPicker();if(onboardingGoal is not null)onboardingGoal.IsDropDownOpen=false;OnboardingMessage("");
         var outgoing=onboardingSteps[onboardingStep];var incoming=onboardingSteps[next];
         var outgoingMove=(TranslateTransform)outgoing.RenderTransform;var incomingMove=(TranslateTransform)incoming.RenderTransform;

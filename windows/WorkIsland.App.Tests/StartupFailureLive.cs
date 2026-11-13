@@ -35,7 +35,7 @@ internal static partial class Program
         },DispatcherPriority.ContextIdle);
         login.Click+=clicked;provider.ReadFailureAfterWrite=new IOException("private-fixture-path simulated status read");
         var source=(HwndSource)PresentationSource.FromVisual(window);var watch=System.Diagnostics.Stopwatch.StartNew();
-        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Isolated startup provider: native click toggles On, write succeeds in fixture, status read throws. File marker removes only provider fault; actual mouse back and Settings reopen must refresh UI. No real registry or GUI handlers after preparation."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"input-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),window.Title,scope="Isolated startup provider: native click toggles On, write succeeds in fixture, status read throws. File marker removes only provider fault; actual mouse back and Settings reopen must refresh UI. No real registry or GUI handlers after preparation."},AtomicStore.JsonOptions));
         try
         {
             while(watch.Elapsed.TotalSeconds<300&&!File.Exists(Path.Combine(output,"stop-review.txt")))
@@ -54,7 +54,7 @@ internal static partial class Program
             check("official settings reopen refreshes actual committed On state",recoveredSource&&readableAfterRecovery&&login.IsEnabled&&login.IsChecked==true,null);
             check("refresh never writes a second startup change",provider.Writes==1,new{provider.Reads,provider.Writes});
             check("recovered settings keeps paused state and clears own failure",engine.Current.State=="paused"&&ReferenceEquals(Field<FrameworkElement>("activePage"),Field<FrameworkElement>("SettingsPage"))&&!Field<TextBlock>("MessageLabel").Text.Contains("无法读取登录项"),null);
-            File.WriteAllText(Path.Combine(output,"startup-live.json"),JsonSerializer.Serialize(new{productDllSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),processId=Environment.ProcessId,windowHandle=source.Handle.ToInt64(),snapshots,scope="Official actual mouse clicks on own paused WPF window. Provider write/read failure and its recovery are injected; observers only read GUI properties and remove provider fault after marker. No actual Windows Run modification, ACL manipulation, real login/session, hardware or game acceptance."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"startup-live.json"),JsonSerializer.Serialize(new{productDllSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),processId=RuntimeCompat.ProcessId,windowHandle=source.Handle.ToInt64(),snapshots,scope="Official actual mouse clicks on own paused WPF window. Provider write/read failure and its recovery are injected; observers only read GUI properties and remove provider fault after marker. No actual Windows Run modification, ACL manipulation, real login/session, hardware or game acceptance."},AtomicStore.JsonOptions));
         }
         finally{login.Click-=clicked;}
     }

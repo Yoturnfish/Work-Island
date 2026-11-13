@@ -60,12 +60,11 @@ swift run FocusIsland
 sh scripts/package_app.sh
 ```
 
-The Windows source currently in this repository builds the original .NET 10 edition; the .NET Framework 4.8 compatibility source and build scripts are pending import.
-Building the current source requires PowerShell 7 and .NET SDK 10.0.401 (later patches in the same feature band are allowed):
+Windows source supports both .NET Framework 4.8 and .NET 10. Building requires Windows, PowerShell 7 and .NET SDK 10.0.401 (later patches in the same feature band are allowed); the first restore needs NuGet access. To build the lightweight edition:
 
 ```powershell
 cd windows
-./build.ps1 -BuildId local
+./build-compat.ps1 -BuildId local-net48
 ```
 
 See the [Windows build and installation guide](windows/README.md), [architecture notes](docs/ARCHITECTURE.md), and [Mac offline tutorial](使用教程.html). These guides are currently in Chinese.

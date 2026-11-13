@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -24,7 +25,7 @@ public sealed class MacDayResetInput : UserControl
         get => minutes;
         set
         {
-            minutes = Math.Clamp(value, 0, 1439);
+            minutes = RuntimeCompat.Clamp(value, 0, 1439);
             if (!IsKeyboardFocusWithin) LoadValue();
         }
     }
@@ -115,7 +116,7 @@ public sealed class MacDayResetInput : UserControl
     // ordinary Minutes setter intentionally leaves active editing untouched.
     internal void RestoreMinutes(int value)
     {
-        minutes=Math.Clamp(value,0,1439);LoadValue();
+        minutes=RuntimeCompat.Clamp(value,0,1439);LoadValue();
     }
 
     private void SetIfChanged(int value)

@@ -41,7 +41,7 @@ internal static partial class Program
         check("live labels match persisted normalized title",store.Load().Settings.DisplayTitle=="剪辑🎬"&&ColorProfilesService.Active(store.Load().Settings)!.Title=="剪辑🎬",null);
         if(review)
         {
-            File.WriteAllText(Path.Combine(output,"review-ready.json"),JsonSerializer.Serialize(new{processId=Environment.ProcessId,windowHandle=((System.Windows.Interop.HwndSource)PresentationSource.FromVisual(window)).Handle.ToInt64(),window.Title,draft=initialName.Text,caption=Blue().Text,scope="Controlled TextBox.Text edit through production TextChanged, screenshot review only. No native typing or IME acceptance."},AtomicStore.JsonOptions));
+            File.WriteAllText(Path.Combine(output,"review-ready.json"),JsonSerializer.Serialize(new{processId=RuntimeCompat.ProcessId,windowHandle=((System.Windows.Interop.HwndSource)PresentationSource.FromVisual(window)).Handle.ToInt64(),window.Title,draft=initialName.Text,caption=Blue().Text,scope="Controlled TextBox.Text edit through production TextChanged, screenshot review only. No native typing or IME acceptance."},AtomicStore.JsonOptions));
             var watch=System.Diagnostics.Stopwatch.StartNew();
             while(watch.Elapsed.TotalSeconds<180&&!File.Exists(Path.Combine(output,"finish-review.txt")))await Task.Delay(100);
         }
@@ -65,6 +65,6 @@ internal static partial class Program
         check("English UI separates Default caption from the unchanged custom Chinese editor name",Green().Text=="Default"&&Name().Text=="历史"&&store.Load().Settings.DisplayTitle=="历史",Green().Text);
         Color(1);Color(1);Name().Text="";check("same-color cycling reaches the second theme and preserves an empty name",settings.ActiveProfileId==second&&Name().Text==""&&Blue().Text=="",null);
         foreach(var menu in menus)menu.IsOpen=false;await Task.Delay(250);
-        File.WriteAllText(Path.Combine(output,"profile-labels.json"),JsonSerializer.Serialize(new{appSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),coreSha256=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(TrackingEngine).Assembly.Location))),scope="Actual WPF TextChanged and palette controls, real own-data file lock, duplicate-color/default/localization cases. Direct control edits, not native typing or physical IME acceptance; raw draft, focus and profile identities checked."},AtomicStore.JsonOptions));
+        File.WriteAllText(Path.Combine(output,"profile-labels.json"),JsonSerializer.Serialize(new{appSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(IslandWindow).Assembly.Location))),coreSha256=RuntimeCompat.ToHexString(RuntimeCompat.HashData(File.ReadAllBytes(typeof(TrackingEngine).Assembly.Location))),scope="Actual WPF TextChanged and palette controls, real own-data file lock, duplicate-color/default/localization cases. Direct control edits, not native typing or physical IME acceptance; raw draft, focus and profile identities checked."},AtomicStore.JsonOptions));
     }
 }

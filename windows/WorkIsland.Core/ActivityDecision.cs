@@ -17,7 +17,7 @@ public static class ActivityDecision
         IEnumerable<WebsiteRule> websites, IEnumerable<string> browsers, double awayThreshold, bool paused)
     {
         if (paused) return new("paused");
-        if (!double.IsFinite(input.IdleSeconds) || input.IdleSeconds >= awayThreshold) return new("away");
+        if (!RuntimeCompat.IsFinite(input.IdleSeconds) || input.IdleSeconds >= awayThreshold) return new("away");
         var identifier = input.PointerApplicationIdentifier ?? input.FrontmostApplicationIdentifier;
         if (identifier is not null && browsers.Contains(identifier, StringComparer.OrdinalIgnoreCase))
         {

@@ -1,3 +1,4 @@
+using WorkIsland.Core;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Security.Cryptography;
@@ -58,7 +59,7 @@ internal sealed class NativeProgressScan : IDisposable
     {
         try
         {
-            ObjectDisposedException.ThrowIf(host.disposed,host);
+            RuntimeCompat.ThrowIfDisposed(host.disposed,host);
             if(host.hostChildren==0)throw new InvalidOperationException("Sibling scans require the original HWND host.");
             Hr(RoInitialize(0));initialized=true;
             compositor=Query(host.compositor,"b403ca50-7f8c-4e83-985f-cc45060036d8");
@@ -84,7 +85,7 @@ internal sealed class NativeProgressScan : IDisposable
     }
     internal void UpdateGeometry(IReadOnlyList<Cell> geometry,double nextWidth,double nextBand,Color nextColor)
     {
-        ObjectDisposedException.ThrowIf(disposed,this);
+        RuntimeCompat.ThrowIfDisposed(disposed,this);
         var rebuild=cells.Count!=geometry.Count||width!=nextWidth||band!=nextBand;
         if(!rebuild)for(var i=0;i<cells.Count;i++)
             if(cells[i].Geometry.Bounds!=geometry[i].Bounds||cells[i].Geometry.RadiusX!=geometry[i].RadiusX||cells[i].Geometry.RadiusY!=geometry[i].RadiusY){rebuild=true;break;}
@@ -157,7 +158,7 @@ internal sealed class NativeProgressScan : IDisposable
         Hr(Fn<PutVector>(clipGeometry,7)(clipGeometry,new((float)clip.RadiusX,(float)clip.RadiusY)));
         SetOpacity(opacity);
     }
-    internal void SetOpacity(double opacity)=>Hr(Fn<PutFloat>(root,23)(root,(float)Math.Clamp(opacity,0,1)));
+    internal void SetOpacity(double opacity)=>Hr(Fn<PutFloat>(root,23)(root,(float)RuntimeCompat.Clamp(opacity,0,1)));
     internal void SetScanning(bool value)
     {
         if(drawing!=0)Hr(Fn<PutFloat>(drawing,23)(drawing,value?1:0));
@@ -170,31 +171,31 @@ internal sealed class NativeProgressScan : IDisposable
     {
         if(!Active)throw new InvalidOperationException("Scan must be active before freezing a review frame.");
         SeekPhase(phase,false);
-        phaseOrigin=Math.Clamp(phase,0,1);phaseTimestamp=Stopwatch.GetTimestamp();phaseFrozen=true;
+        phaseOrigin=RuntimeCompat.Clamp(phase,0,1);phaseTimestamp=Stopwatch.GetTimestamp();phaseFrozen=true;
     }
     // Composition getters expose the submitted value on this Windows runtime,
     // not the advancing compositor-thread position. Use a monotonic estimate
     // only for renderer handoff; visual continuity is separately screen-tested.
-    internal double EstimatedPhase=>phaseFrozen||!Active?phaseOrigin:(phaseOrigin+Stopwatch.GetElapsedTime(phaseTimestamp).TotalSeconds/ScanDuration.TotalSeconds)%1;
+    internal double EstimatedPhase=>phaseFrozen||!Active?phaseOrigin:(phaseOrigin+RuntimeCompat.GetElapsedTime(phaseTimestamp).TotalSeconds/ScanDuration.TotalSeconds)%1;
     internal double ReadControllerProgressForReview()
     {
-        ObjectDisposedException.ThrowIf(disposed,this);
+        RuntimeCompat.ThrowIfDisposed(disposed,this);
         if(!Active||brushes.Count==0)return 0;
         var controller=Controller(brushes[0]);
-        try{Hr(Fn<GetFloat>(controller,8)(controller,out var value));return Math.Clamp(value,0,1);}
+        try{Hr(Fn<GetFloat>(controller,8)(controller,out var value));return RuntimeCompat.Clamp(value,0,1);}
         finally{Marshal.Release(controller);}
     }
     internal void StartAtPhase(double phase)
     {
-        ObjectDisposedException.ThrowIf(disposed,this);
-        if(!double.IsFinite(phase))throw new ArgumentOutOfRangeException(nameof(phase));
+        RuntimeCompat.ThrowIfDisposed(disposed,this);
+        if(!RuntimeCompat.IsFinite(phase))throw new ArgumentOutOfRangeException(nameof(phase));
         SetScanning(true);SeekPhase(phase,true);
-        phaseOrigin=Math.Clamp(phase,0,1)%1;phaseTimestamp=Stopwatch.GetTimestamp();phaseFrozen=false;
+        phaseOrigin=RuntimeCompat.Clamp(phase,0,1)%1;phaseTimestamp=Stopwatch.GetTimestamp();phaseFrozen=false;
     }
     private nint Controller(nint brush)
     {
         var iid=new Guid("0bb3784c-346b-4a7c-966b-7310966553d5");
-        Hr(Marshal.QueryInterface(brush,in iid,out var source));
+        Hr(RuntimeCompat.QueryInterface(brush,iid,out var source));
         using var property=new HString("Offset.X");
         try
         {
@@ -205,13 +206,13 @@ internal sealed class NativeProgressScan : IDisposable
     }
     private void SeekPhase(double phase,bool resume)
     {
-        if(!double.IsFinite(phase))throw new ArgumentOutOfRangeException(nameof(phase));
+        if(!RuntimeCompat.IsFinite(phase))throw new ArgumentOutOfRangeException(nameof(phase));
         foreach(var brush in brushes)
         {
             var controller=Controller(brush);
             try
             {
-                Hr(Fn<Clear>(controller,12)(controller));Hr(Fn<PutFloat>(controller,9)(controller,(float)Math.Clamp(phase,0,1)));
+                Hr(Fn<Clear>(controller,12)(controller));Hr(Fn<PutFloat>(controller,9)(controller,(float)RuntimeCompat.Clamp(phase,0,1)));
                 if(resume)Hr(Fn<Clear>(controller,13)(controller));
             }
             finally{Marshal.Release(controller);}
@@ -221,13 +222,13 @@ internal sealed class NativeProgressScan : IDisposable
     private nint VectorOf(nint collection,string type,string defaultInterface,List<nint> owner)
     {
         var signature=$"pinterface({{913337e9-11a1-4345-a3a2-4e7f956e222d}};rc(Windows.UI.Composition.{type};{{{defaultInterface}}}))";
-        var input=new List<byte>(new Guid("11f47ad5-7b73-42c0-abae-878b1e16adee").ToByteArray(bigEndian:true));input.AddRange(Encoding.UTF8.GetBytes(signature));
-        var hash=SHA1.HashData(input.ToArray());hash[6]=(byte)((hash[6]&15)|0x50);hash[8]=(byte)((hash[8]&63)|0x80);
-        return Query(collection,new Guid(hash.AsSpan(0,16),bigEndian:true).ToString(),owner);
+        var input=new List<byte>(RuntimeCompat.GuidBigEndianBytes(new Guid("11f47ad5-7b73-42c0-abae-878b1e16adee")));input.AddRange(Encoding.UTF8.GetBytes(signature));
+        var hash=RuntimeCompat.Sha1(input.ToArray());hash[6]=(byte)((hash[6]&15)|0x50);hash[8]=(byte)((hash[8]&63)|0x80);
+        return Query(collection,RuntimeCompat.GuidFromBigEndianBytes(hash.Take(16).ToArray()).ToString(),owner);
     }
-    private nint Query(nint pointer,string guid,List<nint>? owner=null){var iid=new Guid(guid);Hr(Marshal.QueryInterface(pointer,in iid,out var result));(owner??references).Add(result);return result;}
+    private nint Query(nint pointer,string guid,List<nint>? owner=null){var iid=new Guid(guid);Hr(RuntimeCompat.QueryInterface(pointer,iid,out var result));(owner??references).Add(result);return result;}
     private nint Create(nint pointer,int slot,List<nint>? owner=null){Hr(Fn<CreateValue>(pointer,slot)(pointer,out var result));(owner??references).Add(result);return result;}
-    private static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*nint.Size));
+    private static T Fn<T>(nint pointer,int slot)where T:Delegate=>Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(pointer),slot*IntPtr.Size));
     private static void Hr(int result)=>Marshal.ThrowExceptionForHR(result);
     private static void Release(List<nint> owner){for(var i=owner.Count-1;i>=0;i--)Marshal.Release(owner[i]);owner.Clear();}
     public void Dispose()
