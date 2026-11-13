@@ -13,7 +13,7 @@ from pathlib import Path
 import shutil, sys
 root, dest = map(Path, sys.argv[1:])
 items = ['Package.swift', '.gitignore', 'AGENTS.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md',
-         'README.md', 'CONTRIBUTING.md', 'SECURITY.md', '使用教程.html', 'AppResources',
+         'README.md', 'README.zh-CN.md', 'CONTRIBUTING.md', 'SECURITY.md', '使用教程.html', 'AppResources',
          'Sources', 'Tests', 'Specs', '.github', 'windows', 'docs/ARCHITECTURE.md', 'docs/VIDEO.zh-CN.md', 'docs/assets/work-island-overview.png',
          'scripts/test_app.sh', 'scripts/package_app.sh', 'scripts/update_app.sh',
          'scripts/restart_app.swift', 'scripts/prepare_open_source.sh']
