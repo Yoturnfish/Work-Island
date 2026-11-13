@@ -3,6 +3,12 @@
 一款本地工作计时工具，提供 macOS 和 Windows 版本。
 根据启用的应用、网页规则和用户活跃状态累计工作时间，在悬浮窗或菜单栏／系统托盘查看每日进度。
 
+## Demo
+
+English · [观看中文版](docs/DEMO.zh-CN.md)
+
+https://github.com/user-attachments/assets/28697375-347d-45ac-888c-212086264d60
+
 ## 为什么做 Work Island
 
 在电脑前坐了十几个小时，真正用在写代码、剪视频等有长期价值的事情上的时间有多少？这是我经常面对的焦虑，也是开发 Work Island 的起点。

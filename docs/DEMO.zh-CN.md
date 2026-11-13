@@ -1,3 +1,5 @@
 # 中文版宣传片
 
-视频将在本次更新中加入。
+[English version](../README.md#demo)
+
+https://github.com/user-attachments/assets/5d933f5e-2be5-464f-8028-48fec83e55b2
