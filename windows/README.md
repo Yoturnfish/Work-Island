@@ -2,6 +2,14 @@
 
 Windows 11 x64 实测的 WPF/.NET 应用：屏幕工作计时、应用/可选网站规则、逻辑日与历史、主题组合、悬浮窗和任务栏通知区域模式。当前前景使用实时绘制，避免整窗缓存交接；悬停不改变手动透明度。
 
+## 当前下载包
+
+Release 的 Windows 附件已换为 `20261113-net48-r2` 轻量兼容版，使用系统提供的 .NET Framework 4.8，不再捆绑 .NET Desktop Runtime。安装器约 3.34 MB，免安装 ZIP 约 0.77 MB。产品版本仍为 0.1.24 / 文件版本 0.1.24.25。
+
+免安装版解压后运行 `Start-Portable.cmd`，记录保存在旁边的 `Data`；直接运行 `WorkIsland.exe` 使用 `%LOCALAPPDATA%/WorkIsland`。升级前正常退出旧版并备份数据。
+
+当前仓库保留原 .NET 10 源码；兼容版源码及其 `build-compat.ps1` 待收到后同步。下列构建命令针对现有 .NET 10 源码。
+
 ## 构建
 
 需要 Windows、PowerShell 7 和 .NET SDK 10.0.401（或 global.json 允许的补丁）。项目不含远程 NuGet 包依赖。

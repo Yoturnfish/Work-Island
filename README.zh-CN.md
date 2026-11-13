@@ -30,7 +30,8 @@ https://github.com/user-attachments/assets/5d933f5e-2be5-464f-8028-48fec83e55b2
 | macOS | 0.8.28（87） | macOS 15+，Apple Silicon | DMG |
 | Windows | 0.1.24 | Windows 11 x64 已验证 | 安装器、免安装 ZIP |
 
-Mac 下载后打开 DMG，将应用拖到 Applications。Windows 运行安装器，或解压免安装包后启动应用。
+Mac 下载后打开 DMG，将应用拖到 Applications。Windows 运行安装器，或解压免安装包后运行 Start-Portable.cmd。
+Windows 下载包使用系统提供的 .NET Framework 4.8，不再附带 .NET 运行时。安装器约 3.34 MB，免安装 ZIP 约 0.77 MB，构建号为 20261113-net48-r2。
 Mac 当前安装包使用本机签名，尚未进行 Apple 公证；Windows 安装包尚未进行代码签名。
 
 ## 功能
@@ -59,7 +60,8 @@ swift run FocusIsland
 sh scripts/package_app.sh
 ```
 
-Windows 需要 PowerShell 7 和 .NET SDK 10.0.401（允许同系列更新补丁）：
+仓库现有 Windows 源码构建原 .NET 10 版本；.NET Framework 4.8 兼容版源码及构建脚本待同步。
+构建现有源码需要 PowerShell 7 和 .NET SDK 10.0.401（允许同系列更新补丁）：
 
 ```powershell
 cd windows

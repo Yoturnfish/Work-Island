@@ -2,7 +2,8 @@
 
 ## Windows
 
-- 产品工程没有外部 NuGet PackageReference。Windows 发行包附带 Microsoft .NET 运行时，保留其中的 LICENSE.txt 和 ThirdPartyNotices.txt。
+- 仓库现有 .NET 10 产品工程没有外部 NuGet PackageReference。
+- 当前 Windows `20261113-net48-r2` 下载包使用系统 .NET Framework 4.8，不附带 .NET 运行时；随包分发的 Microsoft 兼容库保留 MIT 许可，见包内 MICROSOFT-LIBRARIES-LICENSE.txt 和 THIRD-PARTY-NOTICES.txt。
 - Inno Setup 编译器单独安装，不进入源码仓库。
 - Windows 使用系统字体名称，不随包分发 Microsoft YaHei UI、Segoe UI 或 Consolas 字体。
 - Windows 的 MacSymbol.cs 记录了参考 Mac 外形绘制的图标轮廓，来源说明随代码保留。

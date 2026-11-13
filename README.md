@@ -30,7 +30,8 @@ I hope it helps independent developers, freelancers, and anyone who works at a s
 | macOS | 0.8.28 (87) | macOS 15+, Apple Silicon | DMG |
 | Windows | 0.1.24 | Verified on Windows 11 x64 | Installer, portable ZIP |
 
-On Mac, open the DMG and drag the app to Applications. On Windows, run the installer or extract the portable ZIP and launch the app.
+On Mac, open the DMG and drag the app to Applications. On Windows, run the installer or extract the portable ZIP and launch Start-Portable.cmd.
+The Windows downloads use .NET Framework 4.8 provided by Windows, without a bundled .NET runtime. The installer is 3.34 MB and the portable ZIP is 0.77 MB (build 20261113-net48-r2).
 The Mac package is signed with a local certificate and has not been notarized by Apple. The Windows packages are unsigned.
 
 ## Features
@@ -59,7 +60,8 @@ swift run FocusIsland
 sh scripts/package_app.sh
 ```
 
-Windows requires PowerShell 7 and .NET SDK 10.0.401 (later patches in the same feature band are allowed):
+The Windows source currently in this repository builds the original .NET 10 edition; the .NET Framework 4.8 compatibility source and build scripts are pending import.
+Building the current source requires PowerShell 7 and .NET SDK 10.0.401 (later patches in the same feature band are allowed):
 
 ```powershell
 cd windows
