@@ -132,8 +132,12 @@ struct GlassCaptureTests {
         view.setBackgroundStyle(.liquidGlass)
         view.setBackgroundStyle(.glass)
         #expect(view.backgroundStyle == .glass)
+        // Exercise both accessibility states instead of inheriting the runner's preference.
+        view.refreshMaterial(reduceTransparency: false)
         #expect(view.effect?.isHidden == false)
         #expect(!view.subviews.contains { $0 is MTKView })
+        view.refreshMaterial(reduceTransparency: true)
+        #expect(view.effect == nil)
     }
 
     @Test func regionUsesTopLeftDisplayPointsWithBoundedPadding() throws {
