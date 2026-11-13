@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- WPF owns window DPI via the manifest. WinForms is used only for NotifyIcon. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <AssemblyName>WorkIsland</AssemblyName><ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>WorkIsland.App.Program</StartupObject>
+    <ApplicationIcon>Assets\WorkIsland.ico</ApplicationIcon>
+    <AppHostDotNetSearch>AppRelative;EnvironmentVariable;Global</AppHostDotNetSearch>
+    <AppHostRelativeDotNet>runtime</AppHostRelativeDotNet>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../WorkIsland.Core/WorkIsland.Core.csproj" /></ItemGroup>
+  <ItemGroup><Content Include="Assets\WorkIsland.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+</Project>

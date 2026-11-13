@@ -1,0 +1,30 @@
+name: Windows
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['windows/**', 'Specs/**', '.github/workflows/windows-dotnet.yml']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
+        with:
+          global-json-file: windows/global.json
+      - name: Compile WPF and test harness
+        shell: pwsh
+        run: |
+          dotnet build windows/WorkIsland.App.Tests/WorkIsland.App.Tests.csproj -c Release --nologo
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Core regression tests
+        shell: pwsh
+        run: |
+          dotnet run --project windows/WorkIsland.Tests/WorkIsland.Tests.csproj -c Release -- --output windows/test-results/ci-core.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }

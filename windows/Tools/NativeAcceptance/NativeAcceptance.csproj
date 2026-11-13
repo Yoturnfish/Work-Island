@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><ProductDirectory Condition="'$(ProductDirectory)' == ''">$(MSBuildProjectDirectory)/../../WorkIsland.App/bin/Release/net10.0-windows</ProductDirectory>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>WorkIsland.NativeAcceptance</AssemblyName>
+    <AcceptanceVersion Condition="'$(AcceptanceVersion)' == ''">$(Version)</AcceptanceVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="WorkIsland"><HintPath>$(ProductDirectory)/WorkIsland.dll</HintPath></Reference>
+    <Reference Include="WorkIsland.Core"><HintPath>$(ProductDirectory)/WorkIsland.Core.dll</HintPath></Reference>
+    <Content Include="../../WorkIsland.App/Assets/WorkIsland.ico" Link="Assets/WorkIsland.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

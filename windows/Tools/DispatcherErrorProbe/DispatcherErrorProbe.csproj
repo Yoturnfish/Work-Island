@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings><Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <ProductDirectory Condition="'$(ProductDirectory)'==''">$(MSBuildProjectDirectory)/../../WorkIsland.App/bin/Release/net10.0-windows</ProductDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="WorkIsland"><HintPath>$(ProductDirectory)/WorkIsland.dll</HintPath></Reference>
+    <Reference Include="WorkIsland.Core"><HintPath>$(ProductDirectory)/WorkIsland.Core.dll</HintPath></Reference>
+    <Content Include="../../WorkIsland.App/Assets/WorkIsland.ico" Link="Assets/WorkIsland.ico" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+</Project>

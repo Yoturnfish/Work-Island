@@ -1,0 +1,183 @@
+[
+  {
+    "name": "frontmost tracked application",
+    "input": {
+      "frontmostApplicationIdentifier": "com.example.editor",
+      "frontmostApplicationName": "Editor",
+      "idleSeconds": 0
+    },
+    "applicationRules": [
+      {
+        "identifier": "com.example.editor",
+        "displayName": "Editor",
+        "isEnabled": true,
+        "categoryRawValue": "editing"
+      }
+    ],
+    "websiteRules": [],
+    "supportedBrowserIdentifiers": [],
+    "awayThreshold": 300,
+    "isManuallyPaused": false,
+    "expected": {
+      "state": "tracking",
+      "identifier": "com.example.editor",
+      "displayName": "Editor",
+      "categoryRawValue": "editing",
+      "source": "application"
+    }
+  },
+  {
+    "name": "disabled application is away",
+    "input": {
+      "frontmostApplicationIdentifier": "com.example.editor",
+      "frontmostApplicationName": "Editor",
+      "idleSeconds": 0
+    },
+    "applicationRules": [
+      {
+        "identifier": "com.example.editor",
+        "displayName": "Editor",
+        "isEnabled": false,
+        "categoryRawValue": "editing"
+      }
+    ],
+    "websiteRules": [],
+    "supportedBrowserIdentifiers": [],
+    "awayThreshold": 300,
+    "isManuallyPaused": false,
+    "expected": { "state": "away" }
+  },
+  {
+    "name": "pointer application replaces frontmost application",
+    "input": {
+      "frontmostApplicationIdentifier": "com.example.editor",
+      "frontmostApplicationName": "Editor",
+      "pointerApplicationIdentifier": "com.example.other",
+      "pointerApplicationName": "Other",
+      "idleSeconds": 0
+    },
+    "applicationRules": [
+      {
+        "identifier": "com.example.editor",
+        "displayName": "Editor",
+        "isEnabled": true,
+        "categoryRawValue": "editing"
+      }
+    ],
+    "websiteRules": [],
+    "supportedBrowserIdentifiers": [],
+    "awayThreshold": 300,
+    "isManuallyPaused": false,
+    "expected": { "state": "away" }
+  },
+  {
+    "name": "website precedes tracked browser application",
+    "input": {
+      "frontmostApplicationIdentifier": "com.google.Chrome",
+      "frontmostApplicationName": "Chrome",
+      "idleSeconds": 0,
+      "browserURL": "https://example.com/workspace/42"
+    },
+    "applicationRules": [
+      {
+        "identifier": "com.google.Chrome",
+        "displayName": "Chrome",
+        "isEnabled": true,
+        "categoryRawValue": "other"
+      }
+    ],
+    "websiteRules": [
+      {
+        "identifier": "web.example-workspace",
+        "displayName": "Example Workspace",
+        "titleContains": "",
+        "pathContains": "example.com/workspace",
+        "isEnabled": true,
+        "categoryRawValue": "other"
+      }
+    ],
+    "supportedBrowserIdentifiers": ["com.google.Chrome"],
+    "awayThreshold": 300,
+    "isManuallyPaused": false,
+    "expected": {
+      "state": "tracking",
+      "identifier": "web.example-workspace",
+      "displayName": "Example Workspace",
+      "categoryRawValue": "other",
+      "source": "website"
+    }
+  },
+  {
+    "name": "windows browser identifier is supplied by adapter",
+    "input": {
+      "frontmostApplicationIdentifier": "msedge.exe",
+      "frontmostApplicationName": "Microsoft Edge",
+      "idleSeconds": 0,
+      "browserURL": "https://docs.example.net/project"
+    },
+    "applicationRules": [],
+    "websiteRules": [
+      {
+        "identifier": "web.docs",
+        "displayName": "Docs",
+        "titleContains": "",
+        "pathContains": "docs.example.net",
+        "isEnabled": true,
+        "matchesHostOnly": false,
+        "categoryRawValue": "other"
+      }
+    ],
+    "supportedBrowserIdentifiers": ["msedge.exe", "chrome.exe"],
+    "awayThreshold": 300,
+    "isManuallyPaused": false,
+    "expected": {
+      "state": "tracking",
+      "identifier": "web.docs",
+      "displayName": "Docs",
+      "categoryRawValue": "other",
+      "source": "website"
+    }
+  },
+  {
+    "name": "idle boundary is away",
+    "input": {
+      "frontmostApplicationIdentifier": "com.example.editor",
+      "frontmostApplicationName": "Editor",
+      "idleSeconds": 300
+    },
+    "applicationRules": [
+      {
+        "identifier": "com.example.editor",
+        "displayName": "Editor",
+        "isEnabled": true,
+        "categoryRawValue": "editing"
+      }
+    ],
+    "websiteRules": [],
+    "supportedBrowserIdentifiers": [],
+    "awayThreshold": 300,
+    "isManuallyPaused": false,
+    "expected": { "state": "away" }
+  },
+  {
+    "name": "manual pause precedes idle and matching",
+    "input": {
+      "frontmostApplicationIdentifier": "com.example.editor",
+      "frontmostApplicationName": "Editor",
+      "idleSeconds": 999
+    },
+    "applicationRules": [
+      {
+        "identifier": "com.example.editor",
+        "displayName": "Editor",
+        "isEnabled": true,
+        "categoryRawValue": "editing"
+      }
+    ],
+    "websiteRules": [],
+    "supportedBrowserIdentifiers": [],
+    "awayThreshold": 300,
+    "isManuallyPaused": true,
+    "expected": { "state": "paused" }
+  }
+]

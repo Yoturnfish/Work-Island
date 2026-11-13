@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><NoWarn>$(NoWarn);WFO0003</NoWarn></PropertyGroup>
+  <ItemGroup><Compile Include="../../WorkIsland.App/TrayArtwork.cs" Link="TrayArtwork.cs" /><Compile Include="../../WorkIsland.App/StatusTimeArtwork.cs" Link="StatusTimeArtwork.cs" /></ItemGroup>
+</Project>

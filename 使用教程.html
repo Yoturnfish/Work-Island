@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Work Island 使用教程</title>
+  <style>
+    :root { color-scheme: light dark; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; }
+    body { margin: 0; background: #101312; color: #edf2ee; line-height: 1.7; }
+    main { box-sizing: border-box; max-width: 760px; margin: 0 auto; padding: 72px 28px 96px; }
+    h1 { margin: 0; font-size: 36px; letter-spacing: -0.8px; }
+    .subtitle { margin: 8px 0 48px; color: #91a79a; font-size: 16px; }
+    section { margin: 32px 0; padding: 24px 26px; border: 1px solid #2c3a31; border-radius: 18px; background: #171d19; }
+    h2 { margin: 0 0 14px; color: #baf46a; font-size: 20px; }
+    h3 { margin: 20px 0 6px; font-size: 16px; }
+    p, ol { margin: 8px 0; }
+    li + li { margin-top: 6px; }
+    code { padding: 2px 6px; border-radius: 5px; background: #28332b; color: #d5fba5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .note { color: #b8c6bd; }
+    .language-switch { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 24px; }
+    .language-switch button { border: 1px solid #506158; border-radius: 8px; padding: 7px 14px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+    .language-switch button[aria-pressed="true"] { background: #d5fba5; border-color: #d5fba5; color: #18221b; }
+    .language-switch button:focus-visible { outline: 2px solid #91a79a; outline-offset: 3px; }
+    [hidden] { display: none !important; }
+    @media (prefers-color-scheme: light) { body { background: #f3f7f4; color: #18221b; } section { background: #fff; border-color: #d7e1da; } .subtitle, .note { color: #506158; } code { background: #e7f1e9; color: #356211; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav class="language-switch" aria-label="教程语言" id="language-switch">
+      <button type="button" data-lang="zh" aria-pressed="true">中文</button>
+      <button type="button" data-lang="en" aria-pressed="false">English</button>
+    </nav>
+    <article data-language="zh" lang="zh-CN">
+    <h1>Work Island 使用教程</h1>
+    <p class="subtitle">本地创作时长仪表盘 · macOS 15 及以上</p>
+
+    <section>
+      <h2>一、安装 Work Island</h2>
+      <ol>
+        <li>双击 <code>Work Island 0.8.23.dmg</code>。</li>
+        <li>将 <strong>Work Island</strong> 拖入 <strong>Applications（应用程序）</strong> 文件夹。</li>
+        <li>本版本使用临时签名。若 macOS 拦截首次启动，请前往“系统设置 → 隐私与安全性”，在安全提示处选择仍要打开。</li>
+        <li>从“应用程序”打开 <strong>Work Island</strong>。</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>二、移动悬浮窗</h2>
+      <p>将鼠标放在悬浮窗的进度条、文字或时间数字上，按住并拖动，即可调整位置。</p>
+    </section>
+
+    <section>
+      <h2>三、进入导航页</h2>
+      <p>点击悬浮窗左侧的时钟按钮，进入导航页。在这里可以打开设置、历史和识别，也可以暂停或继续计时。</p>
+    </section>
+
+    <section>
+      <h2>四、首次使用与识别设置</h2>
+      <p>首次使用时，请在<strong>识别</strong>页添加工作应用或网页规则；未添加规则时，Work Island 不会累计工作时长。</p>
+      <h3>添加应用程序</h3>
+      <ol>
+        <li>展开“应用程序”。</li>
+        <li>点击“添加”。</li>
+        <li>选择需要统计的 Mac 应用。</li>
+      </ol>
+      <h3>添加网页路径</h3>
+      <p>首次使用网页识别时，请进入“浏览器访问权限”，完成 Chrome、Edge 或 Safari 的权限认证。</p>
+      <ol>
+        <li>点击“网页路径”右侧的“添加”。</li>
+        <li>输入网址中需要包含的关键词，例如 <code>github</code>。</li>
+        <li>当前网页的完整路径包含该关键词时，Work Island 会将其识别为工作内容。</li>
+      </ol>
+      <p class="note">Work Island 只在本机读取当前网页地址用于规则匹配；未命中规则的网址不会写入计时历史。</p>
+    </section>
+    </article>
+    <article data-language="en" lang="en" hidden>
+      <h1>Work Island User Guide</h1>
+      <p class="subtitle">A local creative-work time dashboard · macOS 15 or later</p>
+
+      <section>
+        <h2>1. Install Work Island</h2>
+        <ol>
+          <li>Double-click <code>Work Island 0.8.23.dmg</code>.</li>
+          <li>Drag <strong>Work Island</strong> into the <strong>Applications</strong> folder.</li>
+          <li>This build uses an ad-hoc signature. If macOS blocks the first launch, open System Settings → Privacy &amp; Security and choose Open Anyway beside the security notice.</li>
+          <li>Open <strong>Work Island</strong> from Applications.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>2. Move the floating window</h2>
+        <p>Click and drag the progress bar, title, or time digits to move the floating window.</p>
+      </section>
+
+      <section>
+        <h2>3. Open navigation</h2>
+        <p>Click the clock button on the left of the floating window to open navigation. From here, you can open Settings, History, or Tracking, and pause or resume the timer.</p>
+      </section>
+
+      <section>
+        <h2>4. First use and tracking rules</h2>
+        <p>On first use, add work apps or website rules on the <strong>Tracking</strong> page. Work Island will not accumulate work time until rules have been added.</p>
+        <h3>Add an application</h3>
+        <ol>
+          <li>Expand Applications.</li>
+          <li>Click Add.</li>
+          <li>Select the Mac apps you want to track.</li>
+        </ol>
+        <h3>Add a website path</h3>
+        <p>Before using website tracking, open Browser Access and authorize Chrome, Edge, or Safari.</p>
+        <ol>
+          <li>Click Add beside Website paths.</li>
+          <li>Enter a keyword that should appear in the URL, such as <code>github</code>.</li>
+          <li>When the current page's full URL contains that keyword, Work Island recognizes it as work.</li>
+        </ol>
+        <p class="note">Work Island reads the current URL locally only to match your rules. URLs that do not match a rule are not written to time history.</p>
+      </section>
+    </article>
+  </main>
+  <script>
+    (() => {
+      const storageKey = "workIslandTutorialLanguage";
+      const buttons = document.querySelectorAll("[data-lang]");
+      const articles = document.querySelectorAll("[data-language]");
+      function setLanguage(language) {
+        const selected = language === "en" ? "en" : "zh";
+        articles.forEach(article => { article.hidden = article.dataset.language !== selected; });
+        buttons.forEach(button => { button.setAttribute("aria-pressed", String(button.dataset.lang === selected)); });
+        document.documentElement.lang = selected === "en" ? "en" : "zh-CN";
+        document.title = selected === "en" ? "Work Island User Guide" : "Work Island 使用教程";
+        document.getElementById("language-switch").setAttribute("aria-label", selected === "en" ? "Guide language" : "教程语言");
+        // file:// and private browsing may deny storage. Switching still works offline.
+        try { localStorage.setItem(storageKey, selected); } catch (_) {}
+      }
+      let saved = "zh";
+      try { saved = localStorage.getItem(storageKey) || "zh"; } catch (_) {}
+      setLanguage(saved);
+      buttons.forEach(button => { button.addEventListener("click", () => setLanguage(button.dataset.lang)); });
+    })();
+  </script>
+</body>
+</html>
